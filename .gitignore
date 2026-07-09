@@ -1,0 +1,29 @@
+# build and logs outputs
+dist/
+.astro/
+node_modules/
+
+# local env files containing API keys or private variables
+.env
+.env.production
+.env.development
+.env.local
+.env.*.local
+.env
+
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Mac operating system system trash file
+.DS_Store
+
+# Windows operating system thumbnail caches
+Thumbs.db
+
+# Optional IDE configuration folder blocks
+.vscode/
+.idea/

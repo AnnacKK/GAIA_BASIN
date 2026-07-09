@@ -1,0 +1,20 @@
+{
+  "name": "gaiabasin-garden",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/node": "^11.0.2",
+    "astro": "^7.0.7",
+    "vis-network": "^10.1.0"
+  },
+  "allowScripts": {
+    "vis-network@10.1.0": true
+  }
+}
