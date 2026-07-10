@@ -20,8 +20,8 @@ export const GET = async ({ request }) => {
     return new Response('Invalid OAuth state', { status: 403 });
   }
 
-  const clientId = process.env.GITHUB_CLIENT_ID;
-  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+  const clientId = import.meta.env.GITHUB_CLIENT_ID || process.env.GITHUB_CLIENT_ID;
+  const clientSecret = import.meta.env.GITHUB_CLIENT_SECRET || process.env.GITHUB_CLIENT_SECRET;
   if (!clientId || !clientSecret) {
     return new Response('Missing GitHub OAuth credentials', { status: 500 });
   }
@@ -66,11 +66,13 @@ export const GET = async ({ request }) => {
     maxAge: 0,
   });
 
+  const responseHeaders = new Headers();
+  responseHeaders.append('Location', '/');
+  responseHeaders.append('Set-Cookie', signedSession);
+  responseHeaders.append('Set-Cookie', clearStateCookie);
+
   return new Response(null, {
     status: 302,
-    headers: {
-      Location: '/',
-      'Set-Cookie': [signedSession, clearStateCookie],
-    },
+    headers: responseHeaders,
   });
 };

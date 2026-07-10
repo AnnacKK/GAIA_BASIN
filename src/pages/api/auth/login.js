@@ -2,9 +2,9 @@ import { randomState, buildCookie, signPayload } from '../../../lib/auth.js';
 import { getGitHubUser } from '../../../lib/github.js';
 
 export const GET = async ({ request }) => {
-  const clientId = process.env.GITHUB_CLIENT_ID;
-  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
-  const tokenFallback = process.env.GITHUB_TOKEN;
+  const clientId = import.meta.env.GITHUB_CLIENT_ID || process.env.GITHUB_CLIENT_ID;
+  const clientSecret = import.meta.env.GITHUB_CLIENT_SECRET || process.env.GITHUB_CLIENT_SECRET;
+  const tokenFallback = import.meta.env.GITHUB_TOKEN || process.env.GITHUB_TOKEN;
 
   const url = new URL(request.url);
   const secure = url.protocol === 'https:';
@@ -38,7 +38,7 @@ export const GET = async ({ request }) => {
     }
   }
 
-  const redirectUri = new URL('/api/auth/callback', url).toString();
+  const redirectUri = 'https://tvzfv1br-4321.euw.devtunnels.ms/api/auth/callback';
   const state = randomState();
   const authorizeUrl = new URL('https://github.com/login/oauth/authorize');
   authorizeUrl.searchParams.set('client_id', clientId);

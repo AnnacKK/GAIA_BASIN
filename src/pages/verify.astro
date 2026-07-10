@@ -1,0 +1,366 @@
+---
+import { parseCookies, verifyPayload } from '../lib/auth.js';
+import { REPO_USER, REPO_NAME, REPO_BRANCH, getGitHubUser } from '../lib/github.js';
+
+// Env variables checks
+const clientId = import.meta.env.GITHUB_CLIENT_ID || process.env.GITHUB_CLIENT_ID;
+const clientSecret = import.meta.env.GITHUB_CLIENT_SECRET || process.env.GITHUB_CLIENT_SECRET;
+const githubToken = import.meta.env.GITHUB_TOKEN || process.env.GITHUB_TOKEN;
+const authSecret = import.meta.env.AUTH_SECRET || process.env.AUTH_SECRET;
+
+const envStatus = {
+  GITHUB_CLIENT_ID: clientId ? 'Configured' : 'Missing',
+  GITHUB_CLIENT_SECRET: clientSecret ? 'Configured' : 'Missing',
+  GITHUB_TOKEN: githubToken ? 'Configured' : 'Missing',
+  AUTH_SECRET: authSecret ? 'Configured (Secret Loaded)' : 'Default (Using fallback)',
+};
+
+// Check cookie session
+const cookieHeader = Astro.request.headers.get('cookie') || '';
+const cookies = parseCookies(cookieHeader);
+const sessionCookie = cookies.gh_session;
+
+let sessionPayload = null;
+let userDetails = null;
+let apiStatus = null;
+let baseRepoStatus = null;
+let forkStatus = null;
+let errorMsg = null;
+
+if (sessionCookie) {
+  try {
+    sessionPayload = verifyPayload(sessionCookie);
+    if (sessionPayload && sessionPayload.access_token) {
+      // Test github user API
+      userDetails = await getGitHubUser(sessionPayload.access_token);
+      apiStatus = 'Success';
+      
+      // Test repository access
+      const repoUrl = `https://api.github.com/repos/${REPO_USER}/${REPO_NAME}`;
+      const repoResp = await fetch(repoUrl, {
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'Authorization': `token ${sessionPayload.access_token}`
+        }
+      });
+      if (repoResp.ok) {
+        const repoData = await repoResp.json();
+        baseRepoStatus = {
+          exists: true,
+          permissions: repoData.permissions,
+          fullName: repoData.full_name
+        };
+      } else {
+        baseRepoStatus = {
+          exists: false,
+          error: `GitHub API error: ${repoResp.status} ${repoResp.statusText}`
+        };
+      }
+
+      // Test fork status
+      if (userDetails && userDetails.login !== REPO_USER) {
+        const forkUrl = `https://api.github.com/repos/${userDetails.login}/${REPO_NAME}`;
+        const forkResp = await fetch(forkUrl, {
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization': `token ${sessionPayload.access_token}`
+          }
+        });
+        if (forkResp.ok) {
+          const forkData = await forkResp.json();
+          forkStatus = {
+            exists: true,
+            htmlUrl: forkData.html_url
+          };
+        } else if (forkResp.status === 404) {
+          forkStatus = {
+            exists: false,
+            message: 'No fork found (will be created automatically on first contribution)'
+          };
+        } else {
+          forkStatus = {
+            exists: false,
+            error: `GitHub API error check: ${forkResp.status}`
+          };
+        }
+      } else {
+        forkStatus = {
+          exists: true,
+          message: 'You are the repository owner. No fork needed.'
+        };
+      }
+    } else {
+      errorMsg = 'Session cookie signature verification failed or token expired.';
+    }
+  } catch (err) {
+    errorMsg = err.message || String(err);
+    apiStatus = 'Failed';
+  }
+}
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GaiaBasin - Auth Verification</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+      html, body { background-color: #030d16; color: #e2e8f0; margin: 0; padding: 0; min-height: 100%; }
+      body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+      .glow-border {
+        box-shadow: 0 0 40px rgba(92, 122, 255, 0.08);
+        border: 1px solid rgba(92, 122, 255, 0.15);
+      }
+    </style>
+  </head>
+  <body class="relative flex min-h-screen flex-col items-center justify-center px-4 py-12">
+    <!-- Background subtle lights -->
+    <div class="absolute inset-0 -z-10 overflow-hidden">
+      <div class="absolute -top-40 left-1/4 h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[120px]"></div>
+      <div class="absolute -bottom-40 right-1/4 h-[500px] w-[500px] rounded-full bg-cyan-500/5 blur-[120px]"></div>
+    </div>
+
+    <div class="w-full max-w-4xl rounded-[32px] bg-[#051424] p-8 glow-border">
+      <header class="mb-8 border-b border-[#0f243c] pb-6 text-center">
+        <h1 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+          GaiaBasin Auth Verification
+        </h1>
+        <p class="mt-2 text-sm text-slate-400">
+          Verify environmental variables, GitHub OAuth login status, and perform mock API contribution requests.
+        </p>
+      </header>
+
+      <div class="grid gap-8 md:grid-cols-2">
+        <!-- Environmental Config -->
+        <section class="space-y-4">
+          <h2 class="text-lg font-semibold tracking-wide text-blue-300 uppercase">
+            1. Environment Config
+          </h2>
+          <div class="rounded-2xl border border-[#0f243c] bg-[#04101d] p-5 space-y-3.5">
+            {Object.entries(envStatus).map(([key, value]) => {
+              const isConfigured = value !== 'Missing';
+              return (
+                <div class="flex items-center justify-between text-sm">
+                  <span class="font-mono text-slate-300">{key}</span>
+                  <span class={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${isConfigured ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+                    {value}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <div class="text-xs text-slate-400 leading-relaxed">
+            <strong class="text-slate-300">Note:</strong> If <code class="font-mono text-slate-200">GITHUB_CLIENT_ID</code> and <code class="font-mono text-slate-200">GITHUB_CLIENT_SECRET</code> are missing, the login endpoint automatically falls back to your local <code class="font-mono text-slate-200">GITHUB_TOKEN</code> to sign a developer session.
+          </div>
+        </section>
+
+        <!-- OAuth Session Status -->
+        <section class="space-y-4">
+          <h2 class="text-lg font-semibold tracking-wide text-blue-300 uppercase">
+            2. Active OAuth Session
+          </h2>
+          <div class="rounded-2xl border border-[#0f243c] bg-[#04101d] p-5 space-y-4">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-slate-300">Session Cookie status:</span>
+              <span class={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${sessionCookie ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
+                {sessionCookie ? 'Present' : 'Not Set / Missing'}
+              </span>
+            </div>
+
+            {sessionPayload && (
+              <div class="border-t border-[#0f243c] pt-3.5 space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Expiration:</span>
+                  <span class="font-mono text-slate-200">{new Date(sessionPayload.exp).toLocaleString()}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Token hash snippet:</span>
+                  <span class="font-mono text-slate-200">
+                    ...{sessionPayload.access_token.slice(-6)}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {errorMsg && (
+              <div class="rounded-xl border border-rose-500/20 bg-rose-500/5 p-3 text-xs text-rose-400 leading-normal">
+                <strong>Error:</strong> {errorMsg}
+              </div>
+            )}
+          </div>
+
+          <div class="flex flex-wrap gap-3">
+            {userDetails ? (
+              <a href="/api/auth/logout" class="flex-1 text-center rounded-2xl bg-rose-950/40 border border-rose-800/40 px-4 py-2.5 text-sm font-medium text-rose-300 hover:bg-rose-900/40 transition">
+                Logout Session
+              </a>
+            ) : (
+              <a href="/api/auth/login" class="flex-1 text-center rounded-2xl bg-[#1e3c6a] border border-[#2d5aa1] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#28508f] transition">
+                Test GitHub Authentication Login
+              </a>
+            )}
+          </div>
+        </section>
+      </div>
+
+      <!-- GitHub API & User Details -->
+      {userDetails && (
+        <section class="mt-8 space-y-4">
+          <h2 class="text-lg font-semibold tracking-wide text-blue-300 uppercase">
+            3. GitHub Identity & Sandbox Check
+          </h2>
+          <div class="rounded-2xl border border-[#0f243c] bg-[#04101d] p-6 space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="flex items-center gap-3.5">
+                <img src={userDetails.avatar_url} alt={userDetails.login} class="h-14 w-14 rounded-full border-2 border-blue-500/30" />
+                <div>
+                  <h3 class="text-lg font-bold text-white">@{userDetails.login}</h3>
+                  <p class="text-xs text-slate-400">Authenticated via GitHub API</p>
+                </div>
+              </div>
+              <div class="flex flex-col text-right sm:items-end">
+                <span class="text-xs text-slate-400">Target Repository</span>
+                <span class="font-mono text-sm text-slate-200">{REPO_USER}/{REPO_NAME} ({REPO_BRANCH})</span>
+              </div>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div class="rounded-xl border border-[#0f243c] bg-[#030c17] p-4 text-sm">
+                <h4 class="font-semibold text-slate-200 mb-2">Base Repo Check</h4>
+                {baseRepoStatus ? (
+                  baseRepoStatus.exists ? (
+                    <div class="space-y-1.5 text-xs">
+                      <p class="text-emerald-400">✓ Repository exists</p>
+                      {baseRepoStatus.permissions && (
+                        <p class="text-slate-300">
+                          Permissions: {Object.entries(baseRepoStatus.permissions).filter(([, v]) => v).map(([k]) => k).join(', ') || 'none'}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p class="text-xs text-rose-400">✗ Failed: {baseRepoStatus.error}</p>
+                  )
+                ) : (
+                  <p class="text-xs text-slate-400">Checking...</p>
+                )}
+              </div>
+
+              <div class="rounded-xl border border-[#0f243c] bg-[#030c17] p-4 text-sm">
+                <h4 class="font-semibold text-slate-200 mb-2">Fork Check</h4>
+                {forkStatus ? (
+                  <div class="space-y-1.5 text-xs text-slate-300">
+                    {forkStatus.exists ? (
+                      <p class="text-emerald-400">✓ Ready to propose changes</p>
+                    ) : (
+                      <p class="text-amber-400">⚠ {forkStatus.message}</p>
+                    )}
+                    {forkStatus.htmlUrl && (
+                      <a href={forkStatus.htmlUrl} target="_blank" rel="noreferrer" class="text-blue-400 hover:underline">
+                        View Fork on GitHub
+                      </a>
+                    )}
+                  </div>
+                ) : (
+                  <p class="text-xs text-slate-400">Checking...</p>
+                )}
+              </div>
+            </div>
+
+            <!-- Contribution sandbox form -->
+            <div class="border-t border-[#0f243c] pt-5">
+              <h4 class="text-sm font-semibold text-slate-200 mb-3">4. Test Proposing a Note (API Verification)</h4>
+              <div class="space-y-4">
+                <div class="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">File Path</label>
+                    <input id="test-path" type="text" value="contributions/verification-test.md" class="w-full rounded-xl border border-[#1f2f4f] bg-[#071625] px-4 py-2.5 text-sm text-slate-200 focus:border-[#5c7aff] outline-none" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Commit Message</label>
+                    <input id="test-message" type="text" value="Test contribution from auth verification page" class="w-full rounded-xl border border-[#1f2f4f] bg-[#071625] px-4 py-2.5 text-sm text-slate-200 focus:border-[#5c7aff] outline-none" />
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Markdown Content</label>
+                  <textarea id="test-content" rows="4" class="w-full rounded-xl border border-[#1f2f4f] bg-[#071625] px-4 py-2.5 text-sm text-slate-200 font-mono focus:border-[#5c7aff] outline-none"># Verification Test
+This is a test proposal page created via the authentication verification flow.
+It verifies that forks, commits, and pull requests are properly created on the repository.
+
+- Author: @{userDetails.login}
+- Date: {new Date().toISOString()}</textarea>
+                </div>
+                <div class="flex items-center justify-between gap-4">
+                  <button id="submit-btn" class="rounded-xl bg-[#1e4620] hover:bg-[#2e6231] border border-[#2d6f31] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-emerald-100 transition">
+                    Propose Sandbox Contribution
+                  </button>
+                  <div id="test-status" class="text-sm"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <footer class="mt-8 flex justify-between border-t border-[#0f243c] pt-6">
+        <a href="/" class="rounded-2xl border border-[#0f243c] bg-[#030d16] px-5 py-2.5 text-sm font-medium text-slate-300 hover:bg-[#071625] transition">
+          ← Back to Vault
+        </a>
+        <div class="text-xs text-slate-500 flex items-center">
+          GaiaBasin System Diagnostician
+        </div>
+      </footer>
+    </div>
+
+    <!-- Frontend Interactive Script for sandbox API test -->
+    <script is:inline>
+      const submitBtn = document.getElementById('submit-btn');
+      const testStatus = document.getElementById('test-status');
+
+      if (submitBtn) {
+        submitBtn.addEventListener('click', async () => {
+          const path = document.getElementById('test-path').value.trim();
+          const content = document.getElementById('test-content').value;
+          const commitMessage = document.getElementById('test-message').value.trim();
+
+          if (!path || !content) {
+            testStatus.innerText = 'Error: Path and content are required.';
+            testStatus.className = 'text-sm text-rose-400';
+            return;
+          }
+
+          submitBtn.disabled = true;
+          testStatus.innerText = 'Submitting pull request...';
+          testStatus.className = 'text-sm text-blue-400';
+
+          try {
+            const resp = await fetch('/api/contribute', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                path,
+                content,
+                commitMessage,
+                prDescription: 'Verification sandbox request to verify GitHub integration.'
+              })
+            });
+            const result = await resp.json();
+            if (resp.ok) {
+              testStatus.innerHTML = `Success! Proposed PR: <a href="${result.prUrl}" target="_blank" class="text-emerald-400 underline font-semibold">PR #${result.prNumber}</a>`;
+              testStatus.className = 'text-sm text-emerald-400';
+            } else {
+              testStatus.innerText = `Failed: ${result.error || 'Unknown error'}`;
+              testStatus.className = 'text-sm text-rose-400';
+            }
+          } catch (err) {
+            testStatus.innerText = `Error: ${err.message || err}`;
+            testStatus.className = 'text-sm text-rose-400';
+          } finally {
+            submitBtn.disabled = false;
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

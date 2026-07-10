@@ -1,5 +1,5 @@
 import { parseCookies, verifyPayload } from '../../lib/auth.js';
-import { REPO_USER, getGitHubUser, ensureFork, getFileInfo, upsertFileContent, createPullRequest } from '../../lib/github.js';
+import { REPO_USER, getGitHubUser, ensureFork, getFileInfo, upsertFileContent, createPullRequest, createBranch } from '../../lib/github.js';
 
 export const POST = async ({ request }) => {
   const cookies = parseCookies(request.headers.get('cookie'));
@@ -31,6 +31,9 @@ export const POST = async ({ request }) => {
 
     const fork = await ensureFork(session.access_token, forkOwner);
     const branchName = safeBranch;
+
+    // Create the branch in the target repo (fork or base) before updating/creating content
+    await createBranch(session.access_token, forkOwner, branchName);
 
     let sha;
     try {

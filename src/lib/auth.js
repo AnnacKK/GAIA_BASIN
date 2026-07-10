@@ -1,6 +1,12 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
 
-const SECRET = process.env.AUTH_SECRET || process.env.GITHUB_CLIENT_SECRET || 'astro-secret';
+console.log("Checking environment variables...");
+console.log("AUTH_SECRET exists:", !!import.meta.env.AUTH_SECRET);
+const SECRET = import.meta.env.AUTH_SECRET|| process.env.AUTH_SECRET;
+
+if (!SECRET) {
+  throw new Error('AUTH_SECRET is missing! Please set it in your .env file.');
+}
 
 export function randomState() {
   return randomBytes(16).toString('hex');

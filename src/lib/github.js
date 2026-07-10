@@ -1,4 +1,10 @@
 import { Buffer } from 'buffer';
+import matter from 'gray-matter'; // You might need to install this: npm install gray-matter
+
+export const parseMarkdownFile = (fileContent) => {
+  const { data, content } = matter(fileContent);
+  return { metadata: data, content };
+};
 
 export const REPO_USER = 'AnnacKK';
 export const REPO_NAME = 'GAIA_BASIN_NOTES';
@@ -80,6 +86,20 @@ export const createPullRequest = async ({ token, title, body, head, base = REPO_
   return githubRequest(token, `/repos/${REPO_USER}/${REPO_NAME}/pulls`, {
     method: 'POST',
     body: JSON.stringify({ title, body, head, base }),
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+export const createBranch = async (token, owner, branchName, baseBranch = REPO_BRANCH) => {
+  const baseRef = await githubRequest(token, `/repos/${REPO_USER}/${REPO_NAME}/git/ref/heads/${baseBranch}`);
+  const sha = baseRef.object.sha;
+
+  return githubRequest(token, `/repos/${owner}/${REPO_NAME}/git/refs`, {
+    method: 'POST',
+    body: JSON.stringify({
+      ref: `refs/heads/${branchName}`,
+      sha,
+    }),
     headers: { 'Content-Type': 'application/json' },
   });
 };
