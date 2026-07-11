@@ -198,7 +198,6 @@ try {
             <div id="focus-info" class="hidden shrink-0"></div>
             <ul id="closest-list" class="hidden shrink-0"></ul>
 
-            <p class="text-xs uppercase tracking-[0.3em] text-[#7c98d9] mb-4 shrink-0">Chapters</p>
             <div id="reader-sections" class="space-y-4 text-sm overflow-y-auto flex-1 min-h-0 pr-2 pb-6 scrollbar-hide"></div>
             
           </aside>
@@ -319,7 +318,7 @@ try {
             document.getElementById('reader-path').innerText = noteId;
             document.getElementById('reader-sections').innerHTML = window.buildSectionsHtml([
               { title: 'Group overview', items: [{ type: 'text', label: `Theme: ${folder.label}` }] },
-              { title: 'Contents', items: [] }
+              { title: 'Chapters', items: [] }
             ]);
             document.getElementById('reader-body').innerHTML = `
               <div class="space-y-4 text-sm text-slate-200">
@@ -503,7 +502,7 @@ try {
           }
         }
         if (!sections[0].items.length) {
-          sections[0].items.push({ type: 'text', label: 'No chapters detected.' });
+          sections[0].items.push({ type: 'text', label: 'No chapters.' });
         }
         return sections;
       };
@@ -520,7 +519,7 @@ try {
             }
             return `<li class="section-item text-slate-300">${item.label}</li>`;
           }).join('');
-          return `<div><p class=\"mb-2 text-xs uppercase tracking-[0.24em] text-[#7c98d9]\">${section.title}</p><ul class=\"space-y-2 text-sm text-slate-300\">${items || '<li class=\"text-slate-500\">No items detected.</li>'}</ul></div>`;
+          return `<div><p class=\"mb-2 text-xs uppercase tracking-[0.24em] text-[#7c98d9]\">${section.title}</p><ul class=\"space-y-2 text-sm text-slate-300\">${items || '<li class=\"text-slate-500\">No chapters.</li>'}</ul></div>`;
         }).join('');
       };
       
@@ -877,7 +876,7 @@ try {
           const network = new vis.Network(container, { nodes: nodeDataset, edges: edgeDataset }, {
             interaction: { dragView: true, zoomView: true, dragNodes: true, hover: true },
             physics: {
-              enabled: !savedPositions, // skip physics when restoring saved layout
+              enabled: true,
               solver: 'barnesHut',
               barnesHut: {
                 gravitationalConstant: -2000,
@@ -905,8 +904,6 @@ try {
           } else {
             // First load: wait for physics to stabilize, then fit
             network.on('stabilizationIterationsDone', () => {
-              network.stopSimulation();
-              network.setOptions({ physics: { enabled: false } });
               network.fit({ animation: false });
             });
           }
@@ -916,11 +913,6 @@ try {
               const nodeId = params.nodes[0];
               window.setGraphFocus(nodeId);
               window.openNote(nodeId);
-            }
-          });
-          network.on('dragStart', (params) => {
-            if (params.nodes.length > 0) {
-              network.setOptions({ physics: { enabled: false } });
             }
           });
         };
