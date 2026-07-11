@@ -1,4 +1,4 @@
-﻿---
+---
 const GITHUB_TOKEN = import.meta.env.GITHUB_TOKEN;
 const REPO_USER = "AnnacKK";
 const REPO_NAME = "GAIA_BASIN_NOTES";
@@ -109,22 +109,35 @@ try {
       .file-item:hover { background: rgba(255, 255, 255, 0.04); color: #ffffff; }
       .prose pre { white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; overflow-x: hidden; }
       .prose code { background: rgba(148, 163, 184, 0.12); padding: 0.2rem 0.35rem; border-radius: 0.35rem; word-break: break-word; overflow-wrap: anywhere; }
-      #graph-canvas { position: absolute; inset: 0; background: radial-gradient(circle at 20% 20%, rgba(87, 155, 255, 0.14), transparent 20%), linear-gradient(135deg, rgba(10, 22, 46, 0.96), rgba(4, 15, 29, 0.96), rgba(4, 15, 29, 0.96)); }
+      #graph-canvas { position: absolute; inset: 0;z-index: 1; background: radial-gradient(circle at 20% 20%, rgba(87, 155, 255, 0.14), transparent 20%), linear-gradient(135deg, rgba(10, 22, 46, 0.96), rgba(4, 15, 29, 0.96), rgba(4, 15, 29, 0.96)); }
       #node-viewer { overflow: hidden; padding: 0; }
 
       #node-viewer .viewer-shell { width: 100vw; height: 100vh; max-width: none; max-height: none; overflow: hidden; border-radius: 0; }
       #node-viewer .viewer-shell > .flex { padding: 1.5rem; }
       #node-viewer .viewer-grid { min-height: 0; height: calc(100vh - 10rem); overflow: hidden; display: grid; gap: 1rem; grid-template-columns: minmax(100px, 150px) minmax(0, 1fr) minmax(260px, 320px); }
       #reader-body { overflow: auto; min-height: 0; max-height: 100%; }
-
-
-      
       #reader-sections button, #reader-sections a { display: block; text-align: left; width: 100%; }
       #reader-sections li { list-style: none; }
       #reader-sections .section-item { padding: 0.55rem 0.75rem; border-radius: 1rem; transition: background 0.2s; }
       #reader-sections .section-item:hover { background: rgba(255,255,255,0.05); }
       #mini-graph { position: relative; overflow: hidden; }
       #mini-graph canvas { width: 100% !important; height: 100% !important; }
+
+      .nav-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  color: #94a3b8;
+  transition: all 0.2s;
+}
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+
     </style>
   </head>
   <body>
@@ -285,7 +298,6 @@ try {
             const reader = document.getElementById('node-viewer');
             reader.classList.remove('hidden');
             window.updateCloseButtonText(noteId);
-
             document.getElementById('node-viewer').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
 
@@ -307,10 +319,21 @@ try {
                 <p>This node represents the <strong>${folder.label}</strong> group. You can open one of its child notes below.</p>
                 ${window.renderFolderDetails(folder)}
               </div>`;
+            
+            setTimeout(() => {
+              window.renderMiniGraph(noteId);
+            }, 100);
           }
           return;
         }
         await window.loadVaultFile(noteId);
+        const modal = document.getElementById('node-viewer');
+        modal.classList.remove('hidden'); 
+    
+        // Wait for the CSS transition/rendering to complete
+        setTimeout(() => {
+            window.renderMiniGraph(noteId);
+        }, 100);
       };
 
       window.toggleFolder = (folderId) => {
@@ -323,8 +346,24 @@ try {
 
       window.closeNodeViewer = () => {
         const viewer = document.getElementById('node-viewer');
-        if (viewer) viewer.classList.add('hidden');
+        viewer.classList.add('hidden');
         document.body.style.overflow = '';
+      
+        if (window.miniGraphNetwork) {
+          window.miniGraphNetwork.destroy();
+          window.miniGraphNetwork = null;
+        }
+
+        if (window.graphNetwork) {
+          // Save state before destroy
+          const savedPositions = window.graphNetwork.getPositions();
+          const savedViewPos = { ...window.graphNetwork.getViewPosition() };
+          const savedScale = window.graphNetwork.getScale();
+          window.graphNetwork.destroy();
+          window.graphNetwork = null;
+          // Recreate with fresh event listeners (destroying mini graph corrupts shared vis state)
+          window.createMainGraph(savedPositions, savedViewPos, savedScale);
+        }
       };
 
       window.openEditor = async (existingPath) => {
@@ -480,6 +519,85 @@ try {
           return `<div><p class=\"mb-2 text-xs uppercase tracking-[0.24em] text-[#7c98d9]\">${section.title}</p><ul class=\"space-y-2 text-sm text-slate-300\">${items || '<li class=\"text-slate-500\">No items detected.</li>'}</ul></div>`;
         }).join('');
       };
+      
+      
+      
+    
+      window.handleTab = (tab) => {
+  const readerBody = document.getElementById('reader-body');
+  
+  if (tab === 'overview') {
+    readerBody.innerHTML = window.convertMarkdownToHTML(window.currentRawNote, window.currentNotePath);
+    return;
+  }
+
+  const lines = window.currentRawNote.split('\n');
+  const matches = [];
+  let currentEntry = null;
+
+  // Helper to clean lines of Markdown artifacts like "* " or "- "
+  const cleanLine = (str) => str.replace(/^[\*\-\s]+/, '').trim();
+
+  for (let line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // Detect new link entry
+    if (trimmed.startsWith('- type:') || trimmed.startsWith('* type:')) {
+      if (currentEntry) matches.push(currentEntry);
+      currentEntry = { type: cleanLine(trimmed).replace('type:', '').trim() };
+    } 
+    else if (currentEntry) {
+      if (trimmed.startsWith('title:')) currentEntry.title = cleanLine(trimmed).replace('title:', '').replace(/["']/g, '').trim();
+      if (trimmed.startsWith('url:')) currentEntry.url = cleanLine(trimmed).replace('url:', '').replace(/["']/g, '').trim();
+    }
+  }
+  if (currentEntry) matches.push(currentEntry);
+
+  const filtered = matches.filter(m => {
+    const itemType = m.type.trim().toLowerCase();
+    const tabName = tab.trim().toLowerCase();
+    
+    // Check for exact match or plural variations
+    const isMatch = itemType === tabName || 
+                    itemType + 's' === tabName || 
+                    itemType === tabName + 's';
+                    
+    return isMatch;
+  });
+
+  if (filtered.length > 0) {
+    readerBody.innerHTML = `
+      <h2 class="text-xl font-bold mb-4 capitalize">${tab}</h2>
+      <ul class="space-y-3">
+        ${filtered.map(m => `
+          <li class="p-3 bg-[#0a2336] rounded-xl border border-[#1b3e63]">
+            <a href="${m.url}" target="_blank" class="text-[#8ecae6] hover:text-white font-medium underline">
+              ${m.title}
+            </a>
+          </li>
+        `).join('')}
+      </ul>
+    `;
+  } else {
+    readerBody.innerHTML = `<p class="text-slate-400">No ${tab} found. (Processed ${matches.length} total items)</p>`;
+  }
+};
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       window.convertMarkdownToHTML = (text, notePath) => {
         const resolveImagePath = (fileName) => {
@@ -533,6 +651,7 @@ try {
           }).join('');
         return html;
       };
+      window.currentNoteMetadata = {};
 
       window.loadVaultFile = async (noteId) => {
         const viewer = document.getElementById('node-viewer');
@@ -552,10 +671,19 @@ try {
           const resp = await fetch(`${window.rawCdn}${encodedPath}`);
           if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
           const text = await resp.text();
+
+          const match = text.match(/^---[\s\S]*?---/);
+          if (match) {
+          window.currentNoteMetadata = match[0]; 
+          } else {
+            window.currentNoteMetadata = null;
+          }
+          window.currentRawNote = text;
           const html = window.convertMarkdownToHTML(text, noteId);
           const sections = window.extractSections(text);
           document.getElementById('reader-body').innerHTML = html || '<p class="text-slate-400">This note is empty.</p>';
           document.getElementById('reader-sections').innerHTML = window.buildSectionsHtml(sections);
+
         } catch (err) {
           document.getElementById('reader-body').innerHTML = `<p class="text-red-300">Unable to load note. ${err.message || ''}</p>`;
           document.getElementById('reader-sections').innerHTML = '';
@@ -586,16 +714,25 @@ try {
         const selectedNeighborSet = new Set(selectedNeighbors);
         const miniEdgesFiltered = miniEdges.filter(edge => selectedNeighborSet.has(edge.neighborId));
         const miniNodes = mainNodes
-          .filter(node => node.id === nodeId || selectedNeighborSet.has(node.id))
-          .map(node => ({
-            id: node.id,
-            label: node.label,
-            shape: node.shape || 'dot',
-            color: node.id === nodeId ? { background: '#f8fafc', border: '#d1d5db' } : { background: '#cbd5e1', border: '#94a3b8' },
-            size: node.id === nodeId ? 20 : 14,
-            font: { color: '#f8fafc', size: 10, face: 'Inter, Arial', strokeWidth: 0 },
-            borderWidth: 1
-          }));
+  .filter(node => node.id === nodeId || selectedNeighborSet.has(node.id))
+  .map((node, index, array) => {
+    // 1. Calculate a fixed angle for each node
+    const angle = (2 * Math.PI * index) / array.length;
+    const radius = 100; // Adjust this to change how spread out nodes are
+
+    return {
+      id: node.id,
+      label: node.label,
+      // 2. Assign static coordinates based on index
+      x: node.id === nodeId ? 0 : Math.cos(angle) * radius,
+      y: node.id === nodeId ? 0 : Math.sin(angle) * radius,
+      shape: node.shape || 'dot',
+      color: node.id === nodeId ? { background: '#f8fafc', border: '#d1d5db' } : { background: '#cbd5e1', border: '#94a3b8' },
+      size: node.id === nodeId ? 20 : 14,
+      font: { color: '#f8fafc', size: 10, face: 'Inter, Arial', strokeWidth: 0 },
+      borderWidth: 1
+    };
+  });
 
         window.miniGraphNetwork = new vis.Network(miniGraphDiv, {
           nodes: new vis.DataSet(miniNodes),
@@ -637,7 +774,9 @@ try {
         }));
         nodes.update(updated);
         window.graphNetwork.selectNodes([nodeId]);
-        window.graphNetwork.focus(nodeId, { scale: 0.92, animation: true });
+        const nodePos = window.graphNetwork.getPosition(nodeId);
+        window.graphNetwork.moveTo({ position: nodePos, scale: 0.92, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+        window._panAcc = null; // view moved externally, reset accumulator
 
         const node = processedNodes.find(n => n.id === nodeId);
         const focusInfo = document.getElementById('focus-info');
@@ -651,7 +790,6 @@ try {
           return `<li><button onclick=\"window.openNote('${neighbor.id}')\" class=\"text-left text-sm text-[#8ecae6] hover:text-white underline\">${neighbor.label}</button></li>`;
         }).join('');
         closestList.innerHTML = neighborItems || '<li class=\"text-slate-500\">No direct neighbors found.</li>';
-        window.renderMiniGraph(nodeId);
       };
 
       window.fetchSession = async () => {
@@ -683,84 +821,90 @@ try {
       };
 
       window.addEventListener('DOMContentLoaded', async () => {
-        const container = document.getElementById('graph-canvas');
-        const nodes = new vis.DataSet(processedNodes.map(n => ({
-          id: n.id,
-          label: n.label,
-          shape: n.shape,
-          color: {
-            background: n.color,
-            border: '#f8fafc',
-            highlight: { background: '#ffffff', border: '#81b7ff' },
-            hover: { background: '#cfe4ff', border: '#ffffff' }
-          },
-          borderWidth: 1,
-          size: Math.max(n.size || 14, 16),
-          font: { color: '#edf2f7', size: 11, face: 'Inter, Arial', strokeWidth: 0 },
-          shadow: false,
-          isFolder: n.isFolder,
-          path: n.path
-        })));
-        const edges = new vis.DataSet(processedLinks.map(l => ({ from: l.from, to: l.to, color: { color: 'rgba(255,255,255,0.18)', highlight: 'rgba(255,255,255,0.32)' }, width: 1 })));
+        window.createMainGraph = (savedPositions, savedViewPos, savedScale) => {
+          const container = document.getElementById('graph-canvas');
 
-        const network = new vis.Network(container, { nodes, edges }, {
-  interaction: {
-    dragView: true,
-    zoomView: true,
-    dragNodes: true,
-    hover: true
-  },
-  physics: {
-    enabled: true,
-    barnesHut: {
-      gravitationalConstant: -1500, // Slightly weaker, less "explosive"
-      centralGravity: 0.1,          // Pulls nodes toward the center gently
-      springLength: 95,             // Compact but not crowded
-      springConstant: 0.04,
-      damping: 0.09,                // Damping makes them settle faster
-      avoidOverlap: 0.1
-    },
-    stabilization: {
-      enabled: true,
-      iterations: 200,              // Enough to settle before showing
-      updateInterval: 25
-    }
-  }
-});
-        container.addEventListener('wheel', (event) => {
-          if (!window.graphNetwork) return;
-          event.preventDefault();
-          const delta = event.deltaY;
-          const currentScale = window.graphNetwork.getScale();
-          const nextScale = Math.max(0.25, Math.min(4, currentScale * (delta > 0 ? 0.75 : 1.35)));
-          window.graphNetwork.moveTo({ scale: nextScale, animation: { duration: 120, easingFunction: 'easeInOutQuad' } });
-        }, { passive: false });
-        window.graphNetwork = network;
-        
-        setTimeout(() => {
-          if (window.graphNetwork) {
-            window.graphNetwork.redraw();
-            window.graphNetwork.stabilize();
-            window.fitGlobalGraph();
+          const nodeDataset = new vis.DataSet(processedNodes.map(n => ({
+            id: n.id,
+            label: n.label,
+            shape: n.shape,
+            color: {
+              background: n.color,
+              border: '#f8fafc',
+              highlight: { background: '#ffffff', border: '#81b7ff' },
+              hover: { background: '#cfe4ff', border: '#ffffff' }
+            },
+            borderWidth: 1,
+            size: Math.max(n.size || 14, 16),
+            font: { color: '#edf2f7', size: 11, face: 'Inter, Arial', strokeWidth: 0 },
+            shadow: false,
+            isFolder: n.isFolder,
+            path: n.path,
+            // Restore saved positions when recreating after note close
+            x: savedPositions ? savedPositions[n.id]?.x : undefined,
+            y: savedPositions ? savedPositions[n.id]?.y : undefined
+          })));
+
+          const edgeDataset = new vis.DataSet(processedLinks.map(l => ({
+            from: l.from, to: l.to,
+            color: { color: 'rgba(255,255,255,0.18)', highlight: 'rgba(255,255,255,0.32)' },
+            width: 1
+          })));
+
+          const network = new vis.Network(container, { nodes: nodeDataset, edges: edgeDataset }, {
+            interaction: { dragView: true, zoomView: true, dragNodes: true, hover: true },
+            physics: {
+              enabled: !savedPositions, // skip physics when restoring saved layout
+              solver: 'barnesHut',
+              barnesHut: {
+                gravitationalConstant: -2000,
+                centralGravity: 0.3,
+                springLength: 95,
+                springConstant: 0.04,
+                damping: 0.09,
+                avoidOverlap: 0.1
+              },
+              stabilization: {
+                enabled: !savedPositions,
+                iterations: 200,
+                updateInterval: 25,
+                onlyDynamicEdges: false,
+                fit: false
+              }
+            }
+          });
+
+          window.graphNetwork = network;
+
+          if (savedPositions) {
+            // Restore view position from before note was opened
+            network.moveTo({ position: savedViewPos, scale: savedScale, animation: false });
+          } else {
+            // First load: wait for physics to stabilize, then fit
+            network.on('stabilizationIterationsDone', () => {
+              network.stopSimulation();
+              network.setOptions({ physics: { enabled: false } });
+              network.fit({ animation: false });
+            });
           }
-        }, 450);
+
+          network.on('click', (params) => {
+            if (params.nodes.length > 0) {
+              const nodeId = params.nodes[0];
+              window.setGraphFocus(nodeId);
+              window.openNote(nodeId);
+            }
+          });
+          network.on('dragStart', (params) => {
+            if (params.nodes.length > 0) {
+              network.setOptions({ physics: { enabled: false } });
+            }
+          });
+        };
+
+        window.createMainGraph(null, null, null); // initial load
         window.populateVaultTree();
         window.fetchSession();
- 
-        network.on('click', (params) => {
-          if (params.nodes.length > 0) {
-            const nodeId = params.nodes[0];
-            window.setGraphFocus(nodeId);
-            window.openNote(nodeId);
-          }
-        });
-        network.on("dragStart", () => {
-  network.setOptions({ physics: { enabled: false } });
-});
-
-network.on("dragEnd", () => {
-  network.setOptions({ physics: { enabled: true } });
-});
       });
     </script>
   </body>
