@@ -137,6 +137,14 @@ try {
   color: #ffffff;
 }
 
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #1b3e63; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #2b74b0; }
+.custom-scrollbar { scrollbar-width: thin; scrollbar-color: #1b3e63 transparent; }
 
     </style>
   </head>
@@ -171,7 +179,7 @@ try {
           <div id="contrib-controls" class="flex flex-wrap gap-2"></div>
         </div>
         <div class="viewer-grid grid gap-4 p-6 lg:grid-cols-[280px_1fr_280px]">
-          <aside class="rounded-[32px] border border-[#10243e] bg-[#051b31] p-5 text-sm text-slate-200 overflow-auto">
+          <aside class="rounded-[32px] border border-[#10243e] bg-[#051b31] p-5 text-sm text-slate-200 overflow-auto custom-scrollbar">
             <div class="grid grid-cols-1 gap-2">
               <button onclick="window.handleTab('overview')" class="nav-btn">Overview</button>
               <button onclick="window.handleTab('books')" class="nav-btn">Books</button>
@@ -181,17 +189,17 @@ try {
             </div>
           </aside>
 
-          <article id="reader-body" class="prose prose-invert overflow-auto rounded-[32px] border border-[#10243e] bg-[#041826] p-6 text-slate-100"></article>
+          <article id="reader-body" class="prose prose-invert overflow-auto rounded-[32px] border border-[#10243e] bg-[#041826] p-6 text-slate-100 custom-scrollbar"></article>
 
-          <aside class="rounded-[32px] border border-[#10243e] bg-[#051b31] p-5 text-sm text-slate-200">
-            <p class="text-xs uppercase tracking-[0.3em] text-[#7c98d9] mb-4">Interactive Graph</p>
-            <div id="mini-graph" class="h-48 rounded-[28px] border border-[#123153] bg-[#041826] mb-4"></div>
+          <aside class="rounded-[32px] border border-[#10243e] bg-[#051b31] p-5 text-sm text-slate-200 flex flex-col max-h-[calc(100vh-160px)]">
+            <p class="text-xs uppercase tracking-[0.3em] text-[#7c98d9] mb-4 shrink-0">Interactive Graph</p>
+            <div id="mini-graph" class="h-48 shrink-0 rounded-[28px] border border-[#123153] bg-[#041826] mb-4"></div>
 
-            <div id="focus-info" class="hidden"></div>
-            <ul id="closest-list" class="hidden"></ul>
+            <div id="focus-info" class="hidden shrink-0"></div>
+            <ul id="closest-list" class="hidden shrink-0"></ul>
 
-            <p class="text-xs uppercase tracking-[0.3em] text-[#7c98d9] mb-4">Chapters</p>
-            <div id="reader-sections" class="space-y-4 text-sm"></div>
+            <p class="text-xs uppercase tracking-[0.3em] text-[#7c98d9] mb-4 shrink-0">Chapters</p>
+            <div id="reader-sections" class="space-y-4 text-sm overflow-y-auto flex-1 min-h-0 pr-2 pb-6 scrollbar-hide"></div>
             
           </aside>
         </div>
@@ -447,14 +455,10 @@ try {
       window.updateContributionControls = () => {
         const container = document.getElementById('contrib-controls');
         if (!container) return;
-        if (window.auth.user) {
-          container.innerHTML = `
-            <button onclick="window.openEditor(window.currentNotePath)" class="rounded-2xl bg-[#1a4f7f] px-4 py-2 text-xs uppercase tracking-[0.24em] text-[#d5e9ff] hover:bg-[#2b74b0]">Edit note</button>
-            <button onclick="window.openEditor()" class="rounded-2xl bg-[#17548c] px-4 py-2 text-xs uppercase tracking-[0.24em] text-[#d5e9ff] hover:bg-[#2d74b4]">New note</button>
-          `;
-        } else {
-          container.innerHTML = `<span class="text-xs text-slate-400">Login to propose contributions.</span>`;
-        }
+        container.innerHTML = `
+          <button onclick="window.openEditor(window.currentNotePath)" class="rounded-2xl bg-[#1a4f7f] px-4 py-2 text-xs uppercase tracking-[0.24em] text-[#d5e9ff] hover:bg-[#2b74b0]">Edit note</button>
+          <button onclick="window.openEditor()" class="rounded-2xl bg-[#17548c] px-4 py-2 text-xs uppercase tracking-[0.24em] text-[#d5e9ff] hover:bg-[#2d74b4]">Add resources</button>
+        `;
       };
 
       window.handleObsidianLink = (label) => {
@@ -625,8 +629,22 @@ try {
           return { url: primaryUrl, fallback: primaryUrl === rootUrl ? null : rootUrl };
         };
         const body = text.replace(/^---[\s\S]*?---\s*/, '');
-        const html = body
-          .replace(/```([a-zA-Z0-9]*)\n([\s\S]*?)```/g, (m, lang, code) => `<pre class=\"bg-[#0c1b33] p-4 rounded-2xl my-4 border border-[#1d2f44] text-[#a5d6ff] font-mono text-sm\"><code>${code.trim()}</code></pre>`)
+        
+        const codeBlocks = [];
+        let html = body
+          .replace(/```([a-zA-Z0-9]*)\n([\s\S]*?)```/g, (m, lang, code) => {
+            const escapedCode = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const langLabel = lang ? `<span class="text-xs text-slate-500 font-sans uppercase">${lang}</span>` : '';
+            const block = `<div class="relative group my-5 code-container shadow-lg">
+              <div class="absolute right-3 top-3 flex items-center gap-3 transition-opacity duration-200 opacity-0 group-hover:opacity-100 z-10">
+                ${langLabel}
+                <button onclick="navigator.clipboard.writeText(this.closest('.code-container').querySelector('code').innerText).then(() => { const orig = this.innerText; this.innerText = 'Copied!'; setTimeout(() => this.innerText = orig, 2000); })" class="bg-[#1b324f] hover:bg-[#284a75] text-slate-300 text-[11px] px-2.5 py-1 rounded border border-[#2d4d73] transition-colors shadow-sm font-sans cursor-pointer">Copy</button>
+              </div>
+              <pre class="bg-[#0b1728] pt-12 pb-5 px-5 rounded-2xl border border-[#16273d] text-[#e2e8f0] font-mono text-[13px] leading-relaxed overflow-auto custom-scrollbar m-0 whitespace-pre"><code>${escapedCode}</code></pre>
+            </div>`;
+            codeBlocks.push(block);
+            return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+          })
           .replace(/!\[\[([^\]]+)\]\]|!\[(?:.*?)\]\((.*?)\)|!([^\n]+?\.(?:png|jpg|jpeg|gif))/g, (m, obs, path, bare) => {
             const fileName = (obs || path || bare).replace(/[\[\]]/g, '').trim();
             const image = resolveImagePath(fileName);
@@ -640,7 +658,7 @@ try {
           .replace(/##\s+(.*)$/gim, (m, p1) => `<h2 id=\"${window.slugify(p1)}\" class=\"text-2xl font-semibold text-slate-100 mt-6 mb-3\">${p1}</h2>`)
           .replace(/#\s+(.*)$/gim, (m, p1) => `<h1 id=\"${window.slugify(p1)}\" class=\"text-3xl font-bold text-white mt-6 mb-4\">${p1}</h1>`)
           .replace(/\*\*(.*?)\*\*/g, '<strong class=\"font-semibold text-white\">$1</strong>')
-                    .replace(/\[\[(.*?)\]\]/g, (match, p1) => `<button onclick="window.handleObsidianLink('${p1.replace(/'/g, "\\'")}')" class="text-[#5c7aff] hover:underline font-medium">${p1}</button>`) 
+          .replace(/\[\[(.*?)\]\]/g, (match, p1) => `<button onclick="window.handleObsidianLink('${p1.replace(/'/g, "\\'")}')" class="text-[#5c7aff] hover:underline font-medium">${p1}</button>`) 
           .replace(/\[(.*?)\]\((.*?)\)/g, '<a href=\"$2\" target=\"_blank\" rel=\"noreferrer\" class=\"text-[#8ecae6] hover:text-white underline\">$1</a>')
           .split(/\r?\n/)
           .map(line => {
@@ -649,6 +667,11 @@ try {
             if (trimmed.startsWith('<h') || trimmed.startsWith('<pre') || trimmed.startsWith('<img') || trimmed.startsWith('<ul') || trimmed.startsWith('<ol') || trimmed.startsWith('<button') || trimmed.startsWith('<a')) return trimmed;
             return `<p class=\"mb-3 leading-relaxed text-slate-200\">${trimmed}</p>`;
           }).join('');
+
+        codeBlocks.forEach((block, index) => {
+          html = html.replace(new RegExp(`<p[^>]*>__CODE_BLOCK_${index}__<\\/p>|__CODE_BLOCK_${index}__`, 'g'), block);
+        });
+
         return html;
       };
       window.currentNoteMetadata = {};
