@@ -8,13 +8,14 @@ const RAW_CDN_URL = `https://raw.githubusercontent.com/${REPO_USER}/${REPO_NAME}
 let processedNodes = [];
 let processedLinks = [];
 let folderTree = { id: 'root', label: 'Vault', children: [], files: [] };
+let allResources = [];
 let syncStatus = "Ready";
 
 try {
-  const headers = { "Accept": "application/vnd.github.v3+json" };
+  const headers = { "Accept": "application/vnd.github.v3+json", "Cache-Control": "no-cache" };
   if (GITHUB_TOKEN) headers["Authorization"] = `token ${GITHUB_TOKEN}`;
 
-  const response = await fetch(`https://api.github.com/repos/${REPO_USER}/${REPO_NAME}/git/trees/${REPO_BRANCH}?recursive=1`, { headers });
+  const response = await fetch(`https://api.github.com/repos/${REPO_USER}/${REPO_NAME}/git/trees/${REPO_BRANCH}?recursive=1&t=${Date.now()}`, { headers });
   if (!response.ok) throw new Error(`API error: ${response.status}`);
 
   const data = await response.json();
@@ -80,6 +81,35 @@ try {
   };
 
   buildLinks(folderTree);
+
+  const fetchPromises = fileNodes.map(async (file) => {
+    try {
+      const encodePath = file.path.split('/').map(encodeURIComponent).join('/');
+      const res = await fetch(`${RAW_CDN_URL}${encodePath}?t=${Date.now()}`);
+      if (!res.ok) return;
+      const text = await res.text();
+      const body = text.replace(/^---[\s\S]*?---\s*/, '');
+      const lines = body.split(/\r?\n/);
+      let currentRes = null;
+      const cleanLine = (str) => str.replace(/^[\*\-\s]+/, '').trim();
+      for (let line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('- type:') || trimmed.startsWith('* type:')) {
+          if (currentRes && currentRes.author) allResources.push(currentRes);
+          currentRes = { type: cleanLine(trimmed).replace('type:', '').trim(), fileId: file.id };
+        } else if (currentRes) {
+          if (trimmed.startsWith('title:')) currentRes.title = cleanLine(trimmed).replace('title:', '').replace(/["']/g, '').trim();
+          if (trimmed.startsWith('url:')) currentRes.url = cleanLine(trimmed).replace('url:', '').replace(/["']/g, '').trim();
+          if (trimmed.startsWith('author:')) currentRes.author = cleanLine(trimmed).replace('author:', '').replace(/["']/g, '').trim();
+          if (trimmed.startsWith('incognito:')) currentRes.incognito = cleanLine(trimmed).replace('incognito:', '').replace(/["']/g, '').trim() === 'true';
+        }
+      }
+      if (currentRes && currentRes.author) allResources.push(currentRes);
+    } catch (e) {
+    }
+  });
+
+  await Promise.all(fetchPromises);
 } catch (e) {
   syncStatus = "Offline";
 }
@@ -150,7 +180,7 @@ try {
   </head>
   <body>
     <div class="grid h-screen grid-cols-[320px_1fr] bg-[#031226]">
-      <aside class="flex flex-col border-r border-[#0f1f42] bg-[#04112b] px-6 py-8">
+      <aside class="flex flex-col border-r border-[#0f1f42] bg-[#04112b] px-6 py-8 overflow-y-auto overflow-x-hidden">
         <div>
           <p class="text-[11px] uppercase tracking-[0.35em] text-[#7c98d9] mb-4">Graphs</p>
           <ul id="vault-structure" class="space-y-4 text-sm text-slate-200"></ul>
@@ -231,10 +261,70 @@ try {
       </div>
     </div>
 
-    <script is:inline define:vars={{ processedNodes, processedLinks, folderTree, RAW_CDN_URL }}>
+    <div id="resource-modal" class="hidden fixed inset-0 z-60 bg-black/80 p-6 overflow-auto">
+      <div class="mx-auto max-w-2xl rounded-[32px] border border-[#1e314e] bg-[#061525] shadow-2xl">
+        <div class="flex flex-col gap-4 border-b border-[#17324b] px-6 py-5 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-2xl font-semibold text-white">Add resource</p>
+            <p class="mt-1 text-sm text-slate-400">Add a book, course, or article to this note.</p>
+          </div>
+          <button onclick="window.closeResourceAdder()" class="rounded-2xl border border-[#2b4d7b] bg-[#0d2a53] px-4 py-2 text-sm text-slate-100 hover:bg-[#1c4a82]">Cancel</button>
+        </div>
+        <div class="space-y-4 px-6 py-5">
+          <label class="block text-sm font-medium text-slate-300">Resource type</label>
+          <select id="resource-type" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none appearance-none">
+            <option value="article">Article</option>
+            <option value="book">Book</option>
+            <option value="course">Course</option>
+          </select>
+          <label class="block text-sm font-medium text-slate-300">Title</label>
+          <input id="resource-title" type="text" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="Command Pattern Deep Dive" />
+          <label class="block text-sm font-medium text-slate-300">URL</label>
+          <input id="resource-url" type="url" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="https://example.com/article" />
+          
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-2">
+            <p id="resource-status" class="text-sm text-slate-400"></p>
+            <button onclick="window.submitResource()" class="rounded-3xl bg-[#1a4f7f] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#d5e9ff] hover:bg-[#2b74b0]">Submit resource</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="account-modal" class="hidden fixed inset-0 z-60 bg-[#071621] overflow-auto flex flex-col">
+      <div class="flex items-center justify-between border-b border-[#1e314e] bg-[#061525] px-6 py-4 shrink-0">
+        <div class="flex items-center gap-4" id="account-header-info">
+          <!-- Filled by JS -->
+        </div>
+        <button onclick="window.closeAccountModal()" class="rounded-2xl border border-[#2b4d7b] bg-[#0d2a53] px-4 py-2 text-sm text-slate-100 hover:bg-[#1c4a82]">Close Dashboard</button>
+      </div>
+      <div class="flex flex-1 overflow-hidden flex-col md:flex-row">
+        <div class="md:w-64 border-r border-[#1e314e] bg-[#061525] p-4 flex flex-col gap-2 shrink-0 overflow-y-auto">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-2">Resources</p>
+          <button onclick="window.setAccountTab('all')" id="acc-tab-all" class="text-left px-4 py-3 rounded-xl bg-[#1a4f7f] text-white font-medium">All Added</button>
+          <button onclick="window.setAccountTab('book')" id="acc-tab-book" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Added Books</button>
+          <button onclick="window.setAccountTab('article')" id="acc-tab-article" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Added Articles</button>
+          <button onclick="window.setAccountTab('course')" id="acc-tab-course" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Added Courses</button>
+          <button onclick="window.setAccountTab('note')" id="acc-tab-note" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Added Notes</button>
+          <div class="flex-1 hidden md:block"></div>
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-2 md:mt-0">Account</p>
+          <button onclick="window.setAccountTab('statistics')" id="acc-tab-statistics" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Statistics</button>
+          <button onclick="window.setAccountTab('settings')" id="acc-tab-settings" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Settings</button>
+        </div>
+        <div class="flex-1 p-6 md:p-10 overflow-y-auto custom-scrollbar bg-[#071621]" id="account-content-area">
+          <ul id="account-resources-list" class="space-y-4 max-w-4xl mx-auto">
+            <!-- Filled by JS -->
+          </ul>
+          <div id="account-statistics" class="hidden max-w-4xl mx-auto"></div>
+          <div id="account-settings" class="hidden max-w-4xl mx-auto"></div>
+        </div>
+      </div>
+    </div>
+
+    <script is:inline define:vars={{ processedNodes, processedLinks, folderTree, RAW_CDN_URL, allResources }}>
       window.processedNodes = processedNodes;
       window.processedLinks = processedLinks;
       window.folderTree = folderTree;
+      window.allResources = allResources;
       window.rawCdn = RAW_CDN_URL;
       window.auth = { user: null };
       window.currentNotePath = null;
@@ -391,7 +481,7 @@ try {
           prBodyField.value = `This PR proposes changes to ${existingPath}.`;
           const encodedPath = existingPath.split('/').map(encodeURIComponent).join('/');
           try {
-            const resp = await fetch(`${window.rawCdn}${encodedPath}`);
+            const resp = await fetch(`${window.rawCdn}${encodedPath}?t=${Date.now()}`);
             const text = await resp.text();
             contentField.value = text;
           } catch (err) {
@@ -451,12 +541,114 @@ try {
         }
       };
 
+      window.openResourceAdder = () => {
+        if (!window.auth.user) {
+          alert("only log in user can contribute");
+          return;
+        }
+        if (!window.currentNotePath) {
+          alert("Please open a note first.");
+          return;
+        }
+        document.getElementById('resource-title').value = '';
+        document.getElementById('resource-url').value = '';
+        window.setResourceStatus('');
+        document.getElementById('resource-modal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      };
+
+      window.closeResourceAdder = () => {
+        document.getElementById('resource-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+      };
+
+      window.setResourceStatus = (message, error = false) => {
+        const status = document.getElementById('resource-status');
+        status.innerText = message;
+        status.className = `text-sm ${error ? 'text-rose-300' : 'text-slate-400'}`;
+      };
+
+      window.submitResource = async () => {
+        const type = document.getElementById('resource-type').value;
+        const title = document.getElementById('resource-title').value.trim();
+        const url = document.getElementById('resource-url').value.trim();
+
+        if (!title || !url) {
+          window.setResourceStatus('Please fill in both Title and URL.', true);
+          return;
+        }
+
+        window.setResourceStatus('Preparing contribution...');
+
+        const path = window.currentNotePath;
+        const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+        let currentContent = '';
+        try {
+          const resp = await fetch(`${window.rawCdn}${encodedPath}?t=${Date.now()}`);
+          currentContent = await resp.text();
+        } catch (err) {
+          window.setResourceStatus('Failed to load current note content.', true);
+          return;
+        }
+
+        const isIncognito = localStorage.getItem('gaiabasin_incognito') === 'true';
+        const appendedMarkdown = [
+          '',
+          `- type: ${type}`,
+          `\ttitle: "${title}"`,
+          `\turl: "${url}"`,
+          `\tauthor: "${window.auth.user.login}"`,
+          isIncognito ? `\tincognito: "true"` : null,
+          ''
+        ].filter(l => l !== null).join('\n');
+        const finalContent = currentContent.trimEnd() + '\n' + appendedMarkdown;
+
+        const commitMessage = `Add ${type} resource: ${title}`;
+        const prDescription = `This PR adds a new ${type} resource to ${path}.`;
+
+        window.setResourceStatus('Submitting pull request...');
+
+        try {
+          const resp = await fetch('/api/contribute', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              path: path,
+              content: finalContent,
+              message: commitMessage,
+              description: prDescription
+            })
+          });
+          const result = await resp.json();
+          if (!resp.ok) throw new Error(result.error || 'Failed to submit');
+          
+          window.setResourceStatus(`PR created! <a href="${result.prUrl}" target="_blank" class="text-blue-400 underline hover:text-blue-300">View Pull Request</a>. Waiting for merge...`);
+          
+          const pollInterval = setInterval(async () => {
+             try {
+                const check = await fetch(`/api/prStatus?number=${result.prNumber}`);
+                if (!check.ok) return;
+                const checkData = await check.json();
+                if (checkData.merged) {
+                   clearInterval(pollInterval);
+                   window.setResourceStatus(`PR Merged! Auto-refreshing page...`);
+                   setTimeout(() => window.location.reload(), 1500);
+                }
+             } catch (e) {}
+          }, 5000);
+          
+        } catch (err) {
+          console.error('Resource submission error:', err);
+          window.setResourceStatus('Contribution failed. Please try again.', true);
+        }
+      };
+
       window.updateContributionControls = () => {
         const container = document.getElementById('contrib-controls');
         if (!container) return;
         container.innerHTML = `
           <button onclick="window.openEditor(window.currentNotePath)" class="rounded-2xl bg-[#1a4f7f] px-4 py-2 text-xs uppercase tracking-[0.24em] text-[#d5e9ff] hover:bg-[#2b74b0]">Edit note</button>
-          <button onclick="window.openEditor()" class="rounded-2xl bg-[#17548c] px-4 py-2 text-xs uppercase tracking-[0.24em] text-[#d5e9ff] hover:bg-[#2d74b4]">Add resources</button>
+          <button onclick="window.openResourceAdder()" class="rounded-2xl bg-[#17548c] px-4 py-2 text-xs uppercase tracking-[0.24em] text-[#d5e9ff] hover:bg-[#2d74b4]">Add resources</button>
         `;
       };
 
@@ -493,6 +685,7 @@ try {
       window.extractSections = (text) => {
         const sections = [{ title: 'Chapters', items: [] }];
         const lines = text.split(/\r?\n/);
+        let hasResources = false;
         for (const line of lines) {
           const heading = line.match(/^(#{1,3})\s+(.*)$/);
           if (heading) {
@@ -500,6 +693,12 @@ try {
             const title = heading[2].trim();
             sections[0].items.push({ type: 'section', label: title, target: window.slugify(title), depth });
           }
+          if (line.trim().startsWith('- type:') || line.trim().startsWith('* type:')) {
+            hasResources = true;
+          }
+        }
+        if (hasResources) {
+          sections[0].items.push({ type: 'section', label: 'Resources', target: 'resources', depth: 3 });
         }
         if (!sections[0].items.length) {
           sections[0].items.push({ type: 'text', label: 'No chapters.' });
@@ -553,9 +752,39 @@ try {
     else if (currentEntry) {
       if (trimmed.startsWith('title:')) currentEntry.title = cleanLine(trimmed).replace('title:', '').replace(/["']/g, '').trim();
       if (trimmed.startsWith('url:')) currentEntry.url = cleanLine(trimmed).replace('url:', '').replace(/["']/g, '').trim();
+      if (trimmed.startsWith('author:')) currentEntry.author = cleanLine(trimmed).replace('author:', '').replace(/["']/g, '').trim();
+      if (trimmed.startsWith('incognito:')) currentEntry.incognito = cleanLine(trimmed).replace('incognito:', '').replace(/["']/g, '').trim() === 'true';
     }
   }
   if (currentEntry) matches.push(currentEntry);
+
+  if (tab === 'credits') {
+    const authors = new Set();
+    matches.forEach(m => {
+       if (m.author) {
+          if (m.incognito) authors.add('Anonymous Contributor');
+          else authors.add(m.author);
+       }
+    });
+    
+    if (authors.size > 0) {
+      readerBody.innerHTML = `
+        <h2 class="text-xl font-bold mb-4 capitalize">Credits</h2>
+        <p class="text-slate-400 mb-6">The following users have contributed resources to this note:</p>
+        <ul class="space-y-3">
+          ${Array.from(authors).map(author => `
+            <li class="p-4 bg-[#0a2336] rounded-xl border border-[#1b3e63] flex items-center gap-4">
+              <div class="h-10 w-10 rounded-full bg-[#1e314e] flex items-center justify-center text-white font-bold text-lg border border-slate-600">${author[0]}</div>
+              <span class="text-[#8ecae6] font-medium text-lg">${author}</span>
+            </li>
+          `).join('')}
+        </ul>
+      `;
+    } else {
+      readerBody.innerHTML = `<h2 class="text-xl font-bold mb-4 capitalize">Credits</h2><p class="text-slate-400">No external resources have been contributed to this note yet.</p>`;
+    }
+    return;
+  }
 
   const filtered = matches.filter(m => {
     const itemType = m.type.trim().toLowerCase();
@@ -627,8 +856,36 @@ try {
           const primaryUrl = noteDir ? `${window.rawCdn}${encodePath(`${noteDir}/${clean}`)}` : rootUrl;
           return { url: primaryUrl, fallback: primaryUrl === rootUrl ? null : rootUrl };
         };
-        const body = text.replace(/^---[\s\S]*?---\s*/, '');
+        let body = text.replace(/^---[\s\S]*?---\s*/, '');
         
+        // Extract resources
+        const lines = body.split(/\r?\n/);
+        const normalLines = [];
+        const resources = [];
+        let currentRes = null;
+        const cleanLine = (str) => str.replace(/^[\*\-\s]+/, '').trim();
+
+        for (let line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith('- type:') || trimmed.startsWith('* type:')) {
+            if (currentRes) resources.push(currentRes);
+            currentRes = { type: cleanLine(trimmed).replace('type:', '').trim() };
+          } else if (currentRes && (trimmed.startsWith('title:') || trimmed.startsWith('url:') || trimmed.startsWith('author:') || trimmed.startsWith('incognito:'))) {
+            if (trimmed.startsWith('title:')) currentRes.title = cleanLine(trimmed).replace('title:', '').replace(/["']/g, '').trim();
+            if (trimmed.startsWith('url:')) currentRes.url = cleanLine(trimmed).replace('url:', '').replace(/["']/g, '').trim();
+            if (trimmed.startsWith('author:')) currentRes.author = cleanLine(trimmed).replace('author:', '').replace(/["']/g, '').trim();
+            if (trimmed.startsWith('incognito:')) currentRes.incognito = cleanLine(trimmed).replace('incognito:', '').replace(/["']/g, '').trim() === 'true';
+          } else {
+            if (currentRes) {
+              resources.push(currentRes);
+              currentRes = null;
+            }
+            normalLines.push(line);
+          }
+        }
+        if (currentRes) resources.push(currentRes);
+        body = normalLines.join('\n');
+
         const codeBlocks = [];
         let html = body
           .replace(/```([a-zA-Z0-9]*)\n([\s\S]*?)```/g, (m, lang, code) => {
@@ -671,6 +928,24 @@ try {
           html = html.replace(new RegExp(`<p[^>]*>__CODE_BLOCK_${index}__<\\/p>|__CODE_BLOCK_${index}__`, 'g'), block);
         });
 
+        if (resources.length > 0) {
+          html += '<h3 id="resources" class="text-xl font-semibold text-slate-100 mt-8 mb-4 border-t border-[#1e314e] pt-6">Resources</h3><ul class="space-y-4">';
+          resources.forEach(r => {
+            const authorText = r.author ? (r.incognito ? 'Anonymous Contributor' : r.author) : null;
+            const authorPill = authorText ? `<span class="ml-auto text-xs text-slate-400 bg-[#0d2a53] px-2 py-1 rounded-md">Added by: ${authorText}</span>` : '';
+            html += `<li class="p-4 bg-[#0a2336] rounded-xl border border-[#1b3e63] flex flex-col gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs uppercase tracking-[0.2em] text-[#7c98d9] font-bold">${r.type || 'resource'}</span>
+                ${authorPill}
+              </div>
+              <a href="${r.url || '#'}" target="_blank" class="text-[#8ecae6] hover:text-white font-medium underline text-lg">
+                ${r.title || 'Untitled Resource'}
+              </a>
+            </li>`;
+          });
+          html += '</ul>';
+        }
+
         return html;
       };
       window.currentNoteMetadata = {};
@@ -690,7 +965,7 @@ try {
 
         try {
           const encodedPath = noteId.split('/').map(encodeURIComponent).join('/');
-          const resp = await fetch(`${window.rawCdn}${encodedPath}`);
+          const resp = await fetch(`${window.rawCdn}${encodedPath}?t=${Date.now()}`);
           if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
           const text = await resp.text();
 
@@ -833,12 +1108,233 @@ try {
         if (window.auth.user) {
           controls.innerHTML = `
             <div class=\"flex items-center gap-2 justify-end\">
-              <img src=\"${window.auth.user.avatar_url}\" alt=\"${window.auth.user.login}\" class=\"h-9 w-9 rounded-full border border-slate-500\" />
-              <span class=\"text-sm font-medium text-slate-100\">${window.auth.user.login}</span>
+              <img src=\"${window.auth.user.avatar_url}\" alt=\"${window.auth.user.login}\" class=\"h-9 w-9 rounded-full border border-slate-500 cursor-pointer\" onclick=\"window.openAccountModal()\" />
+              <button onclick=\"window.openAccountModal()\" class=\"text-sm font-medium text-slate-100 hover:text-white\">${window.auth.user.login}</button>
               <a href=\"/api/auth/logout\" class=\"rounded-full bg-[#1a3a6f] px-3 py-2 text-xs uppercase tracking-[0.24em] text-[#d5e9ff] hover:bg-[#2f5c9d]\">Logout</a>
             </div>`;
         } else {
           controls.innerHTML = `<a href=\"/api/auth/login\" class=\"rounded-full bg-[#1a3a6f] px-3 py-2 text-xs uppercase tracking-[0.24em] text-[#d5e9ff] hover:bg-[#2f5c9d]\">Login with GitHub</a>`;
+        }
+      };
+
+      window.setAccountTab = (tab) => {
+         const tabs = ['all', 'book', 'article', 'course', 'note', 'statistics', 'settings'];
+         tabs.forEach(t => {
+            const el = document.getElementById('acc-tab-' + t);
+            if (!el) return;
+            if (t === tab) {
+               el.className = "text-left px-4 py-3 rounded-xl bg-[#1a4f7f] text-white font-medium";
+            } else {
+               el.className = "text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200 transition-colors";
+            }
+         });
+         
+         const list = document.getElementById('account-resources-list');
+         const stats = document.getElementById('account-statistics');
+         const settings = document.getElementById('account-settings');
+         
+         list.classList.add('hidden');
+         stats.classList.add('hidden');
+         settings.classList.add('hidden');
+         
+         if (tab === 'statistics') {
+            stats.classList.remove('hidden');
+            window.renderAccountStatistics();
+         } else if (tab === 'settings') {
+            settings.classList.remove('hidden');
+            window.renderAccountSettings();
+         } else {
+            list.classList.remove('hidden');
+            window.renderAccountResources(tab);
+         }
+      };
+
+      window.renderAccountStatistics = () => {
+         const myResources = window.allResources.filter(r => r.author === window.auth.user.login);
+         const stats = document.getElementById('account-statistics');
+         const counts = myResources.reduce((acc, r) => {
+             const type = (r.type || 'unknown').toLowerCase();
+             acc[type] = (acc[type] || 0) + 1;
+             return acc;
+         }, {});
+         
+         stats.innerHTML = `
+           <h3 class="text-3xl font-bold text-white mb-8">Your Contribution Statistics</h3>
+           <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+             <div class="bg-[#0a2336] rounded-2xl border border-[#1b3e63] p-8 shadow-lg">
+                <p class="text-xs text-[#8ecae6] font-bold uppercase tracking-[0.2em]">Total Resources</p>
+                <p class="text-6xl font-black text-white mt-4">${myResources.length}</p>
+             </div>
+             ${Object.entries(counts).map(([type, count]) => `
+               <div class="bg-[#0a2336] rounded-2xl border border-[#1b3e63] p-8 shadow-lg">
+                  <p class="text-xs text-slate-400 font-bold uppercase tracking-[0.2em]">${type}s</p>
+                  <p class="text-5xl font-bold text-[#8ecae6] mt-4">${count}</p>
+               </div>
+             `).join('')}
+           </div>
+         `;
+      };
+
+      window.renderAccountSettings = () => {
+         const settings = document.getElementById('account-settings');
+         const isIncognito = localStorage.getItem('gaiabasin_incognito') === 'true';
+         settings.innerHTML = `
+           <h3 class="text-3xl font-bold text-white mb-8">Settings</h3>
+           <div class="bg-[#0a2336] rounded-2xl border border-[#1b3e63] p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-lg">
+             <div class="max-w-2xl">
+               <p class="text-xl font-bold text-white">Incognito Mode</p>
+               <p class="text-sm text-slate-400 mt-2 leading-relaxed">When enabled, your username will be hidden from the public "Credits" tab and resource lists, appearing as "Anonymous Contributor".<br/><br/><strong class="text-slate-300">Note:</strong> Since your changes are merged into the repository, your username is still recorded in the code so you can manage your resources from this dashboard later.</p>
+             </div>
+             <label class="relative inline-flex items-center cursor-pointer shrink-0">
+               <input type="checkbox" id="incognito-toggle" class="sr-only peer" ${isIncognito ? 'checked' : ''} onchange="window.toggleIncognito(this.checked)">
+               <div class="w-16 h-8 bg-[#0d2a53] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-slate-300 after:border-gray-300 after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#2069b3] peer-checked:after:bg-white border border-[#1e314e]"></div>
+             </label>
+           </div>
+         `;
+      };
+      
+      window.toggleIncognito = (value) => {
+         localStorage.setItem('gaiabasin_incognito', value ? 'true' : 'false');
+      };
+
+      window.renderAccountResources = (tab) => {
+        let myResources = window.allResources.filter(r => r.author === window.auth.user.login);
+        if (tab !== 'all') {
+           myResources = myResources.filter(r => (r.type || '').toLowerCase() === tab);
+        }
+        const list = document.getElementById('account-resources-list');
+        if (myResources.length === 0) {
+          list.innerHTML = `<div class="text-center p-12 border-2 border-dashed border-[#1e314e] rounded-2xl">
+            <p class="text-slate-400 text-lg">No resources found.</p>
+            <p class="text-slate-500 text-sm mt-2">(Note: resources might take a few minutes to appear here after your Pull Request is merged).</p>
+          </div>`;
+        } else {
+          list.innerHTML = myResources.map(r => `
+            <li class="p-5 bg-[#0a2336] rounded-2xl border border-[#1b3e63] flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-lg hover:border-[#2b4d7b] transition-colors">
+              <div class="flex-1 min-w-0">
+                <span class="text-xs font-bold uppercase tracking-[0.2em] text-[#7c98d9]">${r.type || 'resource'} ${r.incognito ? '<span class="ml-3 text-rose-300 border border-rose-300/30 bg-rose-900/30 px-2 py-0.5 rounded-full tracking-widest text-[10px]">INCOGNITO</span>' : ''}</span>
+                <p class="text-lg font-bold text-white mt-2 truncate">${r.title}</p>
+                <a href="${r.url}" target="_blank" class="text-sm text-[#8ecae6] hover:text-white underline truncate block mt-1">${r.url}</a>
+                <p class="text-xs text-slate-500 mt-3 flex items-center gap-2">
+                   <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"></path></svg>
+                   ${r.fileId}
+                </p>
+              </div>
+              <button onclick="window.deleteResource('${r.fileId}', '${r.title.replace(/'/g, "\\'")}', '${r.url.replace(/'/g, "\\'")}', this)" class="shrink-0 rounded-full bg-rose-900/40 border border-rose-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-rose-200 hover:bg-rose-800 transition-colors focus:ring-2 focus:ring-rose-500 focus:outline-none">Delete</button>
+            </li>
+          `).join('');
+        }
+      };
+
+      window.openAccountModal = () => {
+        if (!window.auth.user) return;
+        
+        document.getElementById('account-header-info').innerHTML = `
+          <img src="${window.auth.user.avatar_url}" class="w-12 h-12 rounded-full border border-slate-500 shadow-md" />
+          <div>
+            <p class="text-2xl font-bold text-white">${window.auth.user.login}</p>
+            <p class="text-sm font-medium text-[#8ecae6] tracking-widest uppercase mt-0.5">Contributor Dashboard</p>
+          </div>
+        `;
+        
+        window.setAccountTab('all');
+        document.getElementById('account-modal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      };
+
+      window.closeAccountModal = () => {
+        document.getElementById('account-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+      };
+
+      window.deleteResource = async (fileId, title, url, btnElement) => {
+        if (!confirm(`Are you sure you want to request deletion of "${title}"? This will create a Pull Request.`)) return;
+        
+        const originalText = btnElement.innerText;
+        btnElement.innerText = "Deleting...";
+        btnElement.disabled = true;
+
+        try {
+          const encodedPath = fileId.split('/').map(encodeURIComponent).join('/');
+          const resp = await fetch(`${window.rawCdn}${encodedPath}?t=${Date.now()}`);
+          if (!resp.ok) throw new Error("Failed to load note content");
+          let currentContent = await resp.text();
+
+          const lines = currentContent.split(/\r?\n/);
+          const newLines = [];
+          let insideTargetResource = false;
+          let blockLines = [];
+          
+          for (let i = 0; i < lines.length; i++) {
+             const trimmed = lines[i].trim();
+             if (trimmed.startsWith('- type:') || trimmed.startsWith('* type:')) {
+                if (blockLines.length > 0) {
+                   newLines.push(...blockLines);
+                   blockLines = [];
+                }
+                blockLines.push(lines[i]);
+             } else if (blockLines.length > 0 && (trimmed.startsWith('title:') || trimmed.startsWith('url:') || trimmed.startsWith('author:') || trimmed.startsWith('incognito:'))) {
+                blockLines.push(lines[i]);
+                const combined = blockLines.join('\n');
+                if (combined.includes(title) && combined.includes(url)) {
+                   insideTargetResource = true;
+                }
+             } else {
+                if (blockLines.length > 0) {
+                   if (!insideTargetResource) {
+                      newLines.push(...blockLines);
+                   }
+                   blockLines = [];
+                   insideTargetResource = false;
+                }
+                newLines.push(lines[i]);
+             }
+          }
+          if (blockLines.length > 0 && !insideTargetResource) {
+             newLines.push(...blockLines);
+          }
+
+          const finalContent = newLines.join('\n');
+
+          const commitMessage = `Remove resource: ${title}`;
+          const prDescription = `This PR removes the resource "${title}" as requested by the author.`;
+
+          const prResp = await fetch('/api/contribute', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              path: fileId,
+              content: finalContent,
+              message: commitMessage,
+              description: prDescription
+            })
+          });
+          const result = await prResp.json();
+          if (!prResp.ok) throw new Error(result.error || 'Failed to submit PR');
+          
+          btnElement.innerText = "PR Created. Waiting...";
+          btnElement.classList.replace("bg-rose-900/40", "bg-emerald-900/40");
+          btnElement.classList.replace("border-rose-800", "border-emerald-800");
+          btnElement.classList.replace("text-rose-200", "text-emerald-200");
+          
+          const pollInterval = setInterval(async () => {
+             try {
+                const check = await fetch(`/api/prStatus?number=${result.prNumber}`);
+                if (!check.ok) return;
+                const checkData = await check.json();
+                if (checkData.merged) {
+                   clearInterval(pollInterval);
+                   btnElement.innerText = "Merged! Refreshing...";
+                   setTimeout(() => window.location.reload(), 1500);
+                }
+             } catch (e) {}
+          }, 5000);
+          
+        } catch (e) {
+          console.error(e);
+          alert("Error: " + e.message);
+          btnElement.innerText = "Error";
+          btnElement.disabled = false;
         }
       };
 
