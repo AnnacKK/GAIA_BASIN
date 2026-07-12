@@ -176,12 +176,120 @@ try {
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #1b3e63; border-radius: 10px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #2b74b0; }
 .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #1b3e63 transparent; }
+</style>
+<style is:global>
+.line-sidebar {
+  --accent-color: #8ecae6;
+  --text-color: #cbd5e1;
+  --marker-color: #1e3a8a;
+  --marker-length: 30px;
+  --marker-gap: 8px;
+  --tick-scale: 0.5;
+  --max-shift: 10px;
+  --item-gap: 6px;
+  --font-size: 0.85rem;
+  --smoothing: 150ms;
 
-    </style>
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.line-sidebar--markers {
+  padding-left: calc(var(--marker-length) + var(--marker-gap));
+}
+
+.line-sidebar--nested {
+  padding-left: 20px;
+  --marker-length: 12px;
+}
+
+.line-sidebar__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--item-gap);
+  width: 100%;
+}
+
+.line-sidebar__item {
+  position: relative;
+  cursor: pointer;
+}
+
+.line-sidebar__item::before {
+  content: '';
+  position: absolute;
+  inset: -6px -48px;
+  z-index: 1;
+}
+
+.line-sidebar__label {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  font-size: var(--font-size);
+  line-height: 1.2;
+  color: color-mix(in srgb, var(--accent-color) calc(var(--effect, 0) * 100%), var(--text-color));
+  transform: translateX(calc(var(--effect, 0) * var(--max-shift)));
+  z-index: 2;
+  transition: opacity 0.2s;
+}
+
+.line-sidebar__item:hover .line-sidebar__label {
+  opacity: 1;
+}
+
+.line-sidebar__index {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  margin-right: 0.6rem;
+  font-size: 0.85em;
+  opacity: calc(0.55 + var(--effect, 0) * 0.45);
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+}
+
+.line-sidebar__text {
+  flex: 1;
+}
+
+.line-sidebar__marker {
+  position: absolute;
+  top: 12px;
+  left: calc(-1 * var(--marker-length) - var(--marker-gap));
+  height: 2px;
+  width: var(--marker-length);
+  background-color: color-mix(in srgb, var(--accent-color) calc(var(--effect, 0) * 100%), var(--marker-color));
+  transform-origin: left center;
+  transform: translateY(-50%) scaleX(calc(0.5 + var(--effect, 0) * 0.5));
+  z-index: 2;
+  border-radius: 2px;
+}
+
+.line-sidebar--ticks .line-sidebar__item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 24px;
+  left: calc(-1 * var(--marker-length) - var(--marker-gap));
+  height: 2px;
+  width: calc(var(--marker-length) * var(--tick-scale));
+  background-color: var(--marker-color);
+  opacity: 0.3;
+  transform: translateY(-50%);
+  border-radius: 2px;
+}
+
+.line-sidebar--scale-tick .line-sidebar__item:not(:last-child)::after {
+  transform-origin: left center;
+  transform: translateY(-50%) scaleX(calc(0.5 + var(--effect, 0) * 0.6));
+}
+</style>
   </head>
   <body>
     <div class="grid h-screen grid-cols-[320px_1fr] bg-[#031226]">
-      <aside class="flex flex-col border-r border-[#0f1f42] bg-[#04112b] px-6 py-8 overflow-y-auto overflow-x-hidden">
+      <aside class="flex flex-col border-r border-[#0f1f42] bg-[#04112b] px-6 py-8 overflow-y-auto overflow-x-hidden custom-scrollbar">
         <div class="mb-6 relative">
           <input type="text" id="vault-search" placeholder="Search notes..." class="w-full bg-[#051833] border border-[#14325a] rounded-xl py-2 pl-10 pr-4 text-sm text-slate-200 focus:outline-none focus:border-[#2b74b0] placeholder-slate-500" />
           <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -261,7 +369,7 @@ try {
             <div id="focus-info" class="hidden shrink-0"></div>
             <ul id="closest-list" class="hidden shrink-0"></ul>
 
-            <div id="reader-sections" class="space-y-4 text-sm overflow-y-auto flex-1 min-h-0 pr-2 pb-6 scrollbar-hide"></div>
+            <div id="reader-sections" class="space-y-4 text-sm overflow-y-auto flex-1 min-h-0 pr-2 pb-6 custom-scrollbar text-slate-300"></div>
             
           </aside>
         </div>
@@ -331,7 +439,7 @@ try {
         <button onclick="window.closeAccountModal()" class="rounded-2xl border border-[#2b4d7b] bg-[#0d2a53] px-4 py-2 text-sm text-slate-100 hover:bg-[#1c4a82]">Close Dashboard</button>
       </div>
       <div class="flex flex-1 overflow-hidden flex-col md:flex-row">
-        <div class="md:w-64 border-r border-[#1e314e] bg-[#061525] p-4 flex flex-col gap-2 shrink-0 overflow-y-auto">
+        <div class="md:w-64 border-r border-[#1e314e] bg-[#061525] p-4 flex flex-col gap-2 shrink-0 overflow-y-auto custom-scrollbar">
           <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-2">Resources</p>
           <button onclick="window.setAccountTab('all')" id="acc-tab-all" class="text-left px-4 py-3 rounded-xl bg-[#1a4f7f] text-white font-medium">All Added</button>
           <button onclick="window.setAccountTab('book')" id="acc-tab-book" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Added Books</button>
@@ -354,6 +462,108 @@ try {
     </div>
 
     <script is:inline define:vars={{ processedNodes, processedLinks, folderTree, RAW_CDN_URL, allResources }}>
+      class LineSidebarController {
+        constructor(listElement, options = {}) {
+          this.list = listElement;
+          this.items = Array.from(this.list.querySelectorAll('.line-sidebar__item'));
+          this.options = {
+            proximityRadius: 100,
+            falloff: 'smooth',
+            smoothing: 150,
+            ...options
+          };
+          this.targets = new Array(this.items.length).fill(0);
+          this.current = new Array(this.items.length).fill(0);
+          this.raf = null;
+          this.lastTime = 0;
+          this.activeIndex = null;
+          
+          this.curves = {
+            linear: p => p,
+            smooth: p => p * p * (3 - 2 * p),
+            sharp: p => p * p * p
+          };
+
+          this.handlePointerMove = this.handlePointerMove.bind(this);
+          this.handlePointerLeave = this.handlePointerLeave.bind(this);
+          this.runFrame = this.runFrame.bind(this);
+          
+          this.list.addEventListener('pointermove', this.handlePointerMove);
+          this.list.addEventListener('pointerleave', this.handlePointerLeave);
+        }
+
+        startLoop() {
+          if (this.raf != null) return;
+          this.lastTime = performance.now();
+          this.raf = requestAnimationFrame(this.runFrame);
+        }
+
+        runFrame(now) {
+          const dt = Math.min((now - this.lastTime) / 1000, 0.05);
+          this.lastTime = now;
+          const tau = Math.max(this.options.smoothing, 1) / 1000;
+          const k = 1 - Math.exp(-dt / tau);
+
+          let moving = false;
+          for (let i = 0; i < this.items.length; i++) {
+            const el = this.items[i];
+            const target = Math.max(this.targets[i] || 0, this.activeIndex === i ? 1 : 0);
+            const cur = this.current[i] || 0;
+            const next = cur + (target - cur) * k;
+            const settled = Math.abs(target - next) < 0.0015;
+            const value = settled ? target : next;
+            
+            this.current[i] = value;
+            el.style.setProperty('--effect', value.toFixed(4));
+            if (!settled) moving = true;
+          }
+
+          if (moving) {
+            this.raf = requestAnimationFrame(this.runFrame);
+          } else {
+            this.raf = null;
+          }
+        }
+
+        handlePointerMove(e) {
+          const rect = this.list.getBoundingClientRect();
+          const pointerY = e.clientY - rect.top;
+          const ease = this.curves[this.options.falloff] || this.curves.linear;
+          
+          for (let i = 0; i < this.items.length; i++) {
+            const el = this.items[i];
+            const center = el.offsetTop + el.offsetHeight / 2;
+            const distance = Math.abs(pointerY - center);
+            this.targets[i] = ease(Math.max(0, 1 - distance / this.options.proximityRadius));
+          }
+          this.startLoop();
+        }
+
+        handlePointerLeave() {
+          this.targets.fill(0);
+          this.startLoop();
+        }
+        
+        setActive(index) {
+          this.activeIndex = index;
+          this.startLoop();
+        }
+        
+        destroy() {
+          this.list.removeEventListener('pointermove', this.handlePointerMove);
+          this.list.removeEventListener('pointerleave', this.handlePointerLeave);
+          if (this.raf) cancelAnimationFrame(this.raf);
+        }
+      }
+      
+      window.activeSidebars = [];
+      window.initSidebars = () => {
+        window.activeSidebars.forEach(s => s.destroy());
+        window.activeSidebars = [];
+        document.querySelectorAll('.line-sidebar__list').forEach(list => {
+           window.activeSidebars.push(new LineSidebarController(list));
+        });
+      };
       window.processedNodes = processedNodes;
       window.processedLinks = processedLinks;
       window.folderTree = folderTree;
@@ -386,26 +596,44 @@ try {
           .join('');
         const files = folder.files
           .sort((a, b) => a.label.localeCompare(b.label))
-          .map(file => {
+          .map((file, index) => {
             const safeFileId = file.id.replace(/'/g, "\\'");
-            return `<li class="file-item" onclick="window.openNote('${safeFileId}')">📄 ${file.label}</li>`;
+            return `<li class="line-sidebar__item" onclick="window.openNote('${safeFileId}')">
+              <span class="line-sidebar__marker" aria-hidden="true"></span>
+              <span class="line-sidebar__label">
+                <span class="line-sidebar__text">${file.label}</span>
+              </span>
+            </li>`;
           }).join('');
+        
         if (isRoot) {
           return `${children}${files}`;
         }
+        
         return `
-          <li class="tree-folder">
-            <div class="folder-label" onclick="window.toggleFolder('${safeId}')">
-              <span class="font-semibold">${folder.label}</span>
-              <span class="folder-arrow">›</span>
+          <li class="tree-folder line-sidebar__item">
+            <span class="line-sidebar__marker" aria-hidden="true"></span>
+            <div class="line-sidebar__label w-full" onclick="window.toggleFolder('${safeId}')">
+              <span class="font-semibold text-white/90 w-full flex justify-between pr-4">${folder.label} <span class="folder-arrow">›</span></span>
             </div>
-            <ul class="mt-2 space-y-1 hidden pl-5" data-folder-id="${safeId}">${children}${files}</ul>
+            <div class="hidden mt-2" data-folder-id="${safeId}">
+              <nav class="line-sidebar line-sidebar--nested">
+                <ul class="line-sidebar__list" style="padding:0;">${children}${files}</ul>
+              </nav>
+            </div>
           </li>`;
       };
       window.populateVaultTree = () => {
         const container = document.getElementById('vault-structure');
         if (!container) return;
-        container.innerHTML = window.renderFolderHtml(window.folderTree);
+        container.innerHTML = `
+          <nav class="line-sidebar line-sidebar--markers">
+            <ul class="line-sidebar__list" style="padding:0;">
+              ${window.renderFolderHtml(window.folderTree)}
+            </ul>
+          </nav>
+        `;
+        if (window.initSidebars) window.initSidebars();
       };
 
       window.refreshTree = () => window.location.reload();
@@ -457,6 +685,7 @@ try {
               { title: 'Group overview', items: [{ type: 'text', label: `Theme: ${folder.label}` }] },
               { title: 'Chapters', items: [] }
             ]);
+            if (window.initSidebars) window.initSidebars();
             document.getElementById('reader-body').innerHTML = `
               <div class="space-y-4 text-sm text-slate-200">
                 <p class="text-lg font-semibold text-white">Theme overview</p>
@@ -785,17 +1014,38 @@ try {
 
       window.buildSectionsHtml = (sections) => {
         return sections.map(section => {
-          const items = section.items.map(item => {
+          const items = section.items.map((item, index) => {
+            const indexSpan = `<span class="line-sidebar__index">${String(index + 1).padStart(2, '0')} </span>`;
             if (item.type === 'section') {
               const indent = item.depth > 1 ? `padding-left: ${0.75 * (item.depth - 1)}rem;` : '';
-              return `<li class=\"section-item\"><button style=\"${indent}\" onclick=\"window.scrollToSection('${item.target}')\" class=\"text-left text-[#8ecae6] hover:text-white font-medium\">${item.label}</button></li>`;
+              return `<li class="line-sidebar__item" onclick="window.scrollToSection('${item.target}')">
+                <span class="line-sidebar__marker" aria-hidden="true"></span>
+                <span class="line-sidebar__label" style="${indent}">
+                  ${indexSpan}<span class="line-sidebar__text">${item.label}</span>
+                </span>
+              </li>`;
             }
             if (item.type === 'link') {
-              return `<li class=\"section-item\"><button onclick=\"window.handleObsidianLink('${item.target}')\" class=\"text-left text-[#8ecae6] hover:text-white underline\">${item.label}</button></li>`;
+              return `<li class="line-sidebar__item" onclick="window.handleObsidianLink('${item.target}')">
+                <span class="line-sidebar__marker" aria-hidden="true"></span>
+                <span class="line-sidebar__label">
+                  ${indexSpan}<span class="line-sidebar__text">${item.label}</span>
+                </span>
+              </li>`;
             }
-            return `<li class="section-item text-slate-300">${item.label}</li>`;
+            return `<li class="line-sidebar__item text-slate-300">
+                <span class="line-sidebar__marker" aria-hidden="true"></span>
+                <span class="line-sidebar__label">
+                  ${indexSpan}<span class="line-sidebar__text">${item.label}</span>
+                </span>
+            </li>`;
           }).join('');
-          return `<div><p class=\"mb-2 text-xs uppercase tracking-[0.24em] text-[#7c98d9]\">${section.title}</p><ul class=\"space-y-2 text-sm text-slate-300\">${items || '<li class=\"text-slate-500\">No chapters.</li>'}</ul></div>`;
+          return `<div>
+            <p class="mb-4 text-xs uppercase tracking-[0.24em] text-[#7c98d9]">${section.title}</p>
+            <nav class="line-sidebar line-sidebar--markers line-sidebar--ticks line-sidebar--scale-tick">
+              <ul class="line-sidebar__list">${items || '<li class="text-slate-500">No chapters.</li>'}</ul>
+            </nav>
+          </div>`;
         }).join('');
       };
       
@@ -1059,6 +1309,7 @@ try {
           const sections = window.extractSections(text);
           document.getElementById('reader-body').innerHTML = html || '<p class="text-slate-400">This note is empty.</p>';
           document.getElementById('reader-sections').innerHTML = window.buildSectionsHtml(sections);
+          if (window.initSidebars) window.initSidebars();
 
         } catch (err) {
           document.getElementById('reader-body').innerHTML = `<p class="text-red-300">Unable to load note. ${err.message || ''}</p>`;
