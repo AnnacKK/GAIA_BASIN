@@ -1,0 +1,620 @@
+---
+// src/pages/about.astro
+import Folder from '../components/Folder.astro';
+import LetterGlitch from '../components/LetterGlitch.astro';
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>About Me | GaiaBasin Garden</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700;800&family=Syne:wght@700;800&family=MedievalSharp&family=Cinzel+Decorative:wght@700;900&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <style is:global>
+      :root {
+        --bg-color: #060606;
+        --text-main: #e2e8f0;
+        --text-muted: #94a3b8;
+        --accent-crimson: #630511;
+        --accent-glow: rgba(99, 5, 17, 0.4);
+        --accent-border: #210d12;
+      }
+      
+      body {
+        background-color: #0e1a2f; /* Dark navy base background matching Hero mockup */
+        color: var(--text-main);
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        overflow-x: hidden;
+        transition: background-color 0.4s ease-out;
+      }
+      
+      h1, h2, h3, h4, .gothic-serif {
+        font-family: 'Playfair Display', serif;
+      }
+      
+      /* Balatro Background Container */
+      #balatro-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1;
+      }
+      
+      /* Scroll animations */
+      .reveal-up {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      
+      .reveal-up.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      
+      /* Webflow-style smooth scrolling */
+      html {
+        scroll-behavior: smooth;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: var(--bg-color); }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 4px; border: 1px solid var(--accent-border); }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--accent-crimson); }
+    </style>
+  </head>
+  <body class="custom-scrollbar">
+    <div id="hero-expanding-circle" class="fixed rounded-full pointer-events-none z-[10]" style="width: 90px; height: 90px; transform: translate(-50%, -50%) scale(1); transform-origin: center; opacity: 0; background-color: #ff4d3d; transition: opacity 0.2s ease-out, background-color 0.4s ease-out; will-change: transform, top, left;"></div>
+    
+    <nav class="fixed top-0 left-0 w-full z-50 p-8 md:px-12 flex justify-between items-center text-white mix-blend-difference">
+      <div class="gothic-serif text-lg tracking-widest uppercase">Anna Chebotarova</div>
+      <div class="hidden md:flex gap-10 text-xs tracking-widest font-bold uppercase">
+         <a href="#about" class="hover:text-slate-300 transition-colors">About</a>
+         <a href="#projects" class="hover:text-slate-300 transition-colors">Projects</a>
+         <a href="/" class="hover:text-slate-300 transition-colors">Contact</a>
+      </div>
+    </nav>
+
+    <main class="w-full">
+      
+      <!-- HERO SECTION (Experience Node Graph - Transparent Background) -->
+      <section class="min-h-screen flex flex-col justify-center items-center px-4 relative overflow-hidden bg-transparent">
+        
+        <!-- Interactive Experience Node Tree SVG -->
+        <div class="w-full max-w-4xl mx-auto z-20 flex flex-col items-center justify-center">
+          <svg viewBox="0 0 1000 650" width="100%" class="drop-shadow-[0_15px_35px_rgba(0,0,0,0.6)] select-none overflow-visible">
+            
+            <defs>
+              <!-- Arrow marker for directed edges -->
+              <marker id="arrow" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#187a93" />
+              </marker>
+              <!-- Soft glow effects for nodes -->
+              <filter id="glow-red" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="8" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+              <filter id="glow-cyan" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="8" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+
+            <!-- Directed Edges (Arrows pointing to parent node) -->
+            <line x1="150" y1="520" x2="500" y2="280" stroke="#187a93" stroke-width="2.5" marker-end="url(#arrow)" class="transition-all duration-300 hover:stroke-[#4bc5df] hover:stroke-[3.5]" />
+            <line x1="500" y1="520" x2="500" y2="280" stroke="#187a93" stroke-width="2.5" marker-end="url(#arrow)" class="transition-all duration-300 hover:stroke-[#4bc5df] hover:stroke-[3.5]" />
+            <line x1="850" y1="520" x2="500" y2="280" stroke="#187a93" stroke-width="2.5" marker-end="url(#arrow)" class="transition-all duration-300 hover:stroke-[#4bc5df] hover:stroke-[3.5]" />
+
+            <!-- Edge Labels (Years of Experience) -->
+            <g transform="translate(325, 400) rotate(-34.5)">
+              <text class="text-sm fill-[#4bc5df] font-medium tracking-wide font-sans" text-anchor="middle" y="-12">years=2</text>
+            </g>
+            <g transform="translate(500, 400) rotate(-90)">
+              <text class="text-sm fill-[#4bc5df] font-medium tracking-wide font-sans" text-anchor="middle" y="-12">years=3</text>
+            </g>
+            <g transform="translate(675, 400) rotate(34.5)">
+              <text class="text-sm fill-[#4bc5df] font-medium tracking-wide font-sans" text-anchor="middle" y="-12">years=2</text>
+            </g>
+
+            <!-- Child Nodes (Cyan) -->
+            <!-- Left: R&D Researcher -->
+            <g class="cursor-pointer group">
+              <circle cx="150" cy="520" r="45" fill="#4bc5df" filter="url(#glow-cyan)" class="transition-transform duration-300 transform group-hover:scale-110 origin-[150px_520px]" />
+              <text x="150" y="525" text-anchor="middle" class="fill-[#0e1a2f] font-bold text-xs uppercase tracking-wider font-sans">R&D</text>
+              <text x="150" y="595" text-anchor="middle" class="fill-slate-300 text-[11px] tracking-widest uppercase font-serif" style="font-family: 'Playfair Display', serif;">Researcher</text>
+            </g>
+
+            <!-- Center: ML Engineer -->
+            <g class="cursor-pointer group">
+              <circle cx="500" cy="520" r="45" fill="#4bc5df" filter="url(#glow-cyan)" class="transition-transform duration-300 transform group-hover:scale-110 origin-[500px_520px]" />
+              <text x="500" y="525" text-anchor="middle" class="fill-[#0e1a2f] font-bold text-xs uppercase tracking-wider font-sans">ML</text>
+              <text x="500" y="595" text-anchor="middle" class="fill-slate-300 text-[11px] tracking-widest uppercase font-serif" style="font-family: 'Playfair Display', serif;">Engineer</text>
+            </g>
+
+            <!-- Right: Tech Writer -->
+            <g class="cursor-pointer group">
+              <circle cx="850" cy="520" r="45" fill="#4bc5df" filter="url(#glow-cyan)" class="transition-transform duration-300 transform group-hover:scale-110 origin-[850px_520px]" />
+              <text x="850" y="525" text-anchor="middle" class="fill-[#0e1a2f] font-bold text-xs uppercase tracking-wider font-sans">Writer</text>
+              <text x="850" y="595" text-anchor="middle" class="fill-slate-300 text-[11px] tracking-widest uppercase font-serif" style="font-family: 'Playfair Display', serif;">Tech Writer</text>
+            </g>
+
+            <!-- Parent Node (Red) -->
+            <g class="cursor-pointer group">
+              <circle id="svg-parent-node" cx="500" cy="280" r="45" fill="#ff4d3d" filter="url(#glow-red)" class="transition-transform duration-300 transform group-hover:scale-110 origin-[500px_280px]" />
+              <circle cx="500" cy="280" r="38" fill="none" stroke="#fffaf0" stroke-width="1.5" opacity="0.4" />
+            </g>
+
+            <!-- Header Text above Parent Node -->
+            <text x="500" y="160" text-anchor="middle" class="fill-[#fffaf0] font-black tracking-widest uppercase drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]" style="font-family: 'Uncial Antiqua', serif; font-size: 38px;">Hi, I am Ann</text>
+
+          </svg>
+        </div>
+
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce opacity-65 z-10">
+          <svg class="w-8 h-8 text-[#4bc5df]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+        </div>
+      </section>
+
+      <!-- STANDALONE ABOUT ME SECTION (Above the Book - Transparent Background) -->
+      <section id="about" class="py-32 px-6 md:px-12 lg:px-24 bg-transparent relative">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-20">
+          <div class="reveal-up order-2 lg:order-1 relative">
+             <div class="absolute inset-0 bg-[#630511] opacity-20 blur-3xl rounded-full z-0"></div>
+             <!-- Gothic Arch Window Frame -->
+             <div class="relative w-full max-w-sm mx-auto aspect-[2/3] border border-[#222] bg-[#0a0a0a] flex items-center justify-center overflow-hidden rounded-t-[150px] shadow-2xl shadow-[#630511]/20">
+                <div class="absolute inset-2 border border-[#630511]/30 rounded-t-[142px]"></div>
+                <div class="absolute inset-4 border border-[#222] rounded-t-[134px]"></div>
+                <div class="gothic-serif text-[240px] text-[#111] leading-none absolute select-none mt-12">V</div>
+                <div class="z-10 flex flex-col items-center gap-6 mt-32">
+                  <span class="text-[#630511] text-3xl">✥</span>
+                  <p class="text-xs uppercase tracking-[0.4em] text-slate-400 text-center px-8 leading-loose font-serif italic drop-shadow-md">"Ex Tenebris<br/>Lux"</p>
+                </div>
+             </div>
+          </div>
+          
+          <div class="order-1 lg:order-2 reveal-up">
+            <h2 class="text-4xl md:text-5xl lg:text-6xl mb-10 text-white leading-tight gothic-serif">Forging Modern <br/><span class="text-[#630511] italic">Sorcery.</span></h2>
+            <div class="space-y-6 text-slate-300 leading-relaxed font-light text-lg">
+              <p>
+                I am Anna, wandering the digital realm under the moniker <span class="text-white italic">Veeylith</span>. My craft lies at the intersection of ancient, medieval aesthetics and cutting-edge machine learning—weaving complex neural architectures as if they were arcane runes.
+              </p>
+              <p>
+                As an R&D Researcher and ML Engineer, I seek to illuminate the unknown. I treat code not merely as logic, but as a deep language capable of breathing life and intelligence into the inanimate.
+              </p>
+              <p>
+                This domain is my personal grimoire. A dark, gothic sanctuary where I document my research, dissect the mechanisms of artificial intelligence, and forge absolute order from the chaos of modern technology.
+              </p>
+            </div>
+            
+            <div class="mt-12 flex gap-6 items-center">
+              <div class="h-px bg-[#333] flex-1"></div>
+              <p class="text-xs uppercase tracking-[0.4em] text-[#630511] font-bold">The Alchemist's Forge</p>
+              <div class="h-px bg-[#333] flex-1"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- PROJECTS SECTION: Grimoire of Projects (Responsive Folder Grid) -->
+      <section id="projects" class="relative border-t border-[#111] bg-transparent py-32 px-6 md:px-12 lg:px-24">
+        <!-- Solid background layer at z-0 behind the cursor follower -->
+        <div id="projects-bg" class="absolute inset-0 bg-[#070503] z-0 pointer-events-none" style="transition: opacity 0.4s ease-out; opacity: 0;"></div>
+
+        <div class="relative z-20 w-full">
+          <!-- Projects Gothic Title Header -->
+        <div class="w-full text-center mb-20">
+          <h2 class="text-3xl md:text-5xl uppercase tracking-[0.4em] text-[#e2e8f0]/90 gothic-serif" style="font-family: 'Uncial Antiqua', serif;">Projects</h2>
+          <div class="flex justify-center items-center gap-4 mt-4 opacity-70">
+            <div class="h-px w-12 bg-[#8b6914]/40"></div>
+            <span class="text-[#8b6914] text-sm">&#x2726;</span>
+            <div class="h-px w-12 bg-[#8b6914]/40"></div>
+          </div>
+        </div>
+
+        <!-- Folder Grid Container -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 max-w-6xl mx-auto items-start">
+          
+          <!-- Folder 1 -->
+          <div class="flex flex-col items-center group bg-[#0a0806]/40 p-8 border border-[#8b6914]/10 rounded-lg hover:border-[#8b6914]/30 transition-all duration-300 backdrop-blur-sm shadow-xl">
+            <div style="height: 120px; position: relative;">
+              <Folder color="#630511" size={1.0} items={['Multimodal', 'RAG', 'Python']} />
+            </div>
+            <a href="https://github.com/AnnacKK/SOFTSERVE_multimodal_RAG" target="_blank" class="text-base font-serif font-bold text-[#dfb651] mt-6 uppercase tracking-wider text-center block hover:underline hover:text-[#fffaf0] transition-colors" style="font-family: 'Playfair Display', serif;">
+              SOFTSERVE Multimodal RAG
+            </a>
+            <p class="text-slate-400 text-xs text-center mt-3 leading-relaxed font-light">
+              Advanced multimodal retrieval-augmented generation pipeline.
+            </p>
+          </div>
+
+          <!-- Folder 2 -->
+          <div class="flex flex-col items-center group bg-[#0a0806]/40 p-8 border border-[#8b6914]/10 rounded-lg hover:border-[#8b6914]/30 transition-all duration-300 backdrop-blur-sm shadow-xl">
+            <div style="height: 120px; position: relative;">
+              <Folder color="#2c1035" size={1.0} items={['Jupyter', 'Models', 'Data']} />
+            </div>
+            <a href="https://github.com/AnnacKK/Projects" target="_blank" class="text-base font-serif font-bold text-[#dfb651] mt-6 uppercase tracking-wider text-center block hover:underline hover:text-[#fffaf0] transition-colors" style="font-family: 'Playfair Display', serif;">
+              Projects
+            </a>
+            <p class="text-slate-400 text-xs text-center mt-3 leading-relaxed font-light">
+              A repository housing various machine learning experiments.
+            </p>
+          </div>
+
+          <!-- Folder 3 -->
+          <div class="flex flex-col items-center group bg-[#0a0806]/40 p-8 border border-[#8b6914]/10 rounded-lg hover:border-[#8b6914]/30 transition-all duration-300 backdrop-blur-sm shadow-xl">
+            <div style="height: 120px; position: relative;">
+              <Folder color="#103531" size={1.0} items={['Astro', 'Network', 'Nodes']} />
+            </div>
+            <a href="https://github.com/AnnacKK/GAIA_BASIN" target="_blank" class="text-base font-serif font-bold text-[#dfb651] mt-6 uppercase tracking-wider text-center block hover:underline hover:text-[#fffaf0] transition-colors" style="font-family: 'Playfair Display', serif;">
+              GaiaBasin
+            </a>
+            <p class="text-slate-400 text-xs text-center mt-3 leading-relaxed font-light">
+              Custom interactive graphical data networks.
+            </p>
+          </div>
+
+          <!-- Folder 4 -->
+          <div class="flex flex-col items-center group bg-[#0a0806]/40 p-8 border border-[#8b6914]/10 rounded-lg hover:border-[#8b6914]/30 transition-all duration-300 backdrop-blur-sm shadow-xl">
+            <div style="height: 120px; position: relative;">
+              <Folder color="#1a2b4c" size={1.0} items={['Notion', 'RAG', 'API']} />
+            </div>
+            <a href="https://github.com/AnnacKK/notion-rag" target="_blank" class="text-base font-serif font-bold text-[#dfb651] mt-6 uppercase tracking-wider text-center block hover:underline hover:text-[#fffaf0] transition-colors" style="font-family: 'Playfair Display', serif;">
+              Notion RAG
+            </a>
+            <p class="text-slate-400 text-xs text-center mt-3 leading-relaxed font-light">
+              Connect private Notion notebooks with custom LLM searchers.
+            </p>
+          </div>
+
+          <!-- Folder 5 -->
+          <div class="flex flex-col items-center group bg-[#0a0806]/40 p-8 border border-[#8b6914]/10 rounded-lg hover:border-[#8b6914]/30 transition-all duration-300 backdrop-blur-sm shadow-xl">
+            <div style="height: 120px; position: relative;">
+              <Folder color="#4a2e15" size={1.0} items={['Audio', 'ML', 'Music']} />
+            </div>
+            <a href="https://github.com/AnnacKK/chords-detection" target="_blank" class="text-base font-serif font-bold text-[#dfb651] mt-6 uppercase tracking-wider text-center block hover:underline hover:text-[#fffaf0] transition-colors" style="font-family: 'Playfair Display', serif;">
+              Chords Detection
+            </a>
+            <p class="text-slate-400 text-xs text-center mt-3 leading-relaxed font-light">
+              Machine learning models designed for audio chord transcription.
+            </p>
+          </div>
+
+        </div>
+        </div>
+      </section>
+
+      <style>
+        /* ScrollVelocity Styles */
+        .parallax-container {
+          position: relative;
+          overflow: hidden;
+          width: 100%;
+          display: flex;
+        }
+        .scroller-inner {
+          display: flex;
+          white-space: nowrap;
+          will-change: transform;
+        }
+        .velocity-span {
+          flex-shrink: 0;
+          display: inline-block;
+        }
+      </style> <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const containers = document.querySelectorAll('.parallax-container');
+          if (!containers.length) return;
+
+          let lastScrollY = window.scrollY;
+          let speed = 1.0;
+          let baseSpeeds = Array.from(containers, (c) => parseFloat(c.getAttribute('data-direction')) * 1.5);
+          let positions = Array(containers.length).fill(0);
+
+          const inners = Array.from(containers, c => c.querySelector('.scroller-inner'));
+          const spans = Array.from(containers, c => c.querySelector('.velocity-span'));
+          
+          function animate() {
+            const scrollY = window.scrollY;
+            const delta = scrollY - lastScrollY;
+            lastScrollY = scrollY;
+
+            // Increase velocity based on scroll delta
+            const velocityFactor = Math.abs(delta) * 0.15;
+            speed += (velocityFactor - speed) * 0.1;
+
+            inners.forEach((inner, i) => {
+              if (!spans[i] || !inner) return;
+              const spanWidth = spans[i].offsetWidth;
+              if (!spanWidth) return;
+              
+              const direction = baseSpeeds[i] > 0 ? 1 : -1;
+              const increment = baseSpeeds[i] + direction * baseSpeeds[i] * speed;
+              positions[i] += increment;
+
+              // Wrap calculations
+              if (direction > 0) {
+                if (positions[i] > 0) positions[i] = -spanWidth;
+              } else {
+                if (positions[i] < -spanWidth) positions[i] = 0;
+              }
+
+              inner.style.transform = `translate3d(${positions[i]}px, 0, 0)`;
+            });
+
+            // Decelerate speed smoothly
+            speed *= 0.95;
+            if (speed < 0.01) speed = 0;
+
+            requestAnimationFrame(animate);
+          }
+
+        });
+      </script>
+
+
+
+
+    <!-- Scroll-driven node zoom transition script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const parentNode = document.getElementById('svg-parent-node');
+        const expandingCircle = document.getElementById('hero-expanding-circle');
+
+        function updateCircle() {
+          if (!parentNode || !expandingCircle) return;
+
+          const scrollY = window.scrollY;
+          const viewportHeight = window.innerHeight;
+          const progress = Math.min(scrollY / (viewportHeight * 0.95), 1);
+
+          if (progress > 0.01) {
+            // Find parent node coordinates in fixed viewport space
+            const rect = parentNode.getBoundingClientRect();
+            const parentCenterX = rect.left + rect.width / 2;
+            const parentCenterY = rect.top + rect.height / 2;
+
+            expandingCircle.style.left = `${parentCenterX}px`;
+            expandingCircle.style.top = `${parentCenterY}px`;
+            
+            // Fade out slightly at the very end of scroll to blend into about section smoothly
+            expandingCircle.style.opacity = progress > 0.98 ? '0' : '1';
+            
+            // Interpolate color from SVG parent node red (#ff4d3d) to target crimson (#630511)
+            if (progress >= 0.5) {
+              expandingCircle.style.backgroundColor = '#630511';
+            } else {
+              expandingCircle.style.backgroundColor = '#ff4d3d';
+            }
+            
+            // Scale circle to cover full viewport width/height (no clipping because it is fixed!)
+            const scale = 1 + Math.pow(progress, 3.5) * 65;
+            expandingCircle.style.transform = `translate(-50%, -50%) scale(${scale})`;
+          } else {
+            expandingCircle.style.opacity = '0';
+            expandingCircle.style.transform = 'translate(-50%, -50%) scale(1)';
+            expandingCircle.style.backgroundColor = '#ff4d3d';
+          }
+
+          // Transition document body background to matching crimson background
+          if (progress >= 0.75) {
+            document.body.style.backgroundColor = '#630511';
+          } else {
+            document.body.style.backgroundColor = '#0e1a2f';
+          }
+        }
+
+        window.addEventListener('scroll', updateCircle, { passive: true });
+        window.addEventListener('resize', updateCircle);
+        // Initial call
+        setTimeout(updateCircle, 100);
+      });
+    </script>
+
+
+
+
+      <!-- TECH WRITING SECTION -->
+      <section id="tech-writing" class="relative min-h-[80vh] py-48 px-6 border-t border-[#111] overflow-hidden flex items-center justify-center bg-black">
+        <LetterGlitch 
+          glitchSpeed={50} 
+          centerVignette={true} 
+          outerVignette={true} 
+          smooth={true} 
+          glitchColors={['#F97316', '#e4d00b', '#84CC16']}
+        />
+        
+        <div class="relative z-10 max-w-4xl mx-auto text-center reveal-up p-12">
+          <h2 class="text-5xl md:text-7xl text-white gothic-serif mb-8 drop-shadow-2xl tracking-wide">Tech Journal</h2>
+          <p class="text-xl md:text-2xl text-slate-300 font-light mb-12 max-w-2xl mx-auto leading-relaxed mix-blend-screen drop-shadow-md">
+            I write to learn. My articles help many people, not only in CS field.
+          </p>
+          <div class="flex flex-wrap justify-center gap-6">
+            <a href="https://drukarnia.com.ua/mlfromjun" target="_blank" class="inline-block px-10 py-4 bg-transparent hover:bg-white/10 border border-white/30 text-white tracking-[0.2em] uppercase text-sm font-bold transition-all shadow-xl backdrop-blur-sm">
+              Drukarnia
+            </a>
+            <a href="https://medium.com/@mirandorexes" target="_blank" class="inline-block px-10 py-4 bg-transparent hover:bg-white/10 border border-white/30 text-white tracking-[0.2em] uppercase text-sm font-bold transition-all shadow-xl backdrop-blur-sm">
+              Medium
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="py-20 px-6 border-t border-[#111] bg-[#020202] text-center">
+        <div class="reveal-up">
+           <h2 class="text-4xl md:text-7xl mb-12 text-white">Let's Connect</h2>
+           <div class="flex justify-center gap-8 mb-16">
+              <a href="#" class="text-sm uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors">GitHub</a>
+              <a href="#" class="text-sm uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors">Twitter</a>
+              <a href="#" class="text-sm uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors">LinkedIn</a>
+           </div>
+           <p class="text-xs uppercase tracking-widest text-slate-600">© 2025 Anna Chebotarova. All rights reserved.</p>
+        </div>
+      </footer>
+      
+    </main>
+
+    <script>
+      // Intersection Observer for scroll animations
+      document.addEventListener('DOMContentLoaded', () => {
+        const observerOptions = {
+          root: null,
+          rootMargin: '0px',
+          threshold: 0.15
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target); // Run once
+            }
+          });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal-up').forEach(element => {
+          observer.observe(element);
+        });
+      });
+    </script>
+    <!-- Scroll-driven node zoom and pointer-follower transition script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const parentNode = document.getElementById('svg-parent-node');
+        const expandingCircle = document.getElementById('hero-expanding-circle');
+        const projectsSection = document.getElementById('projects');
+        const projectsBg = document.getElementById('projects-bg');
+        const aboutSection = document.getElementById('about');
+
+        if (!parentNode || !expandingCircle || !projectsSection) return;
+
+        let mouseX = 0, mouseY = 0;
+        let followerX = 0, followerY = 0;
+        let isHoveringProjects = false;
+
+        // Global window-level mouse coordinate tracking
+        window.addEventListener('mousemove', (e) => {
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+        });
+
+        // Hover toggles on the Projects section
+        projectsSection.addEventListener('mouseenter', () => {
+          isHoveringProjects = true;
+          // Instantly sync follower position on enter to prevent laggy drag-in
+          followerX = mouseX;
+          followerY = mouseY;
+        });
+
+        projectsSection.addEventListener('mouseleave', () => {
+          isHoveringProjects = false;
+        });
+
+        function updateLoop() {
+          requestAnimationFrame(updateLoop);
+
+          const scrollY = window.scrollY;
+          const viewportHeight = window.innerHeight;
+
+          // Expand progress (Hero to About transition)
+          const progressExpand = Math.min(scrollY / (viewportHeight * 0.95), 1);
+          let progressShrink = 0;
+
+          if (scrollY > viewportHeight * 0.95) {
+            progressShrink = Math.min((scrollY - viewportHeight * 0.95) / (viewportHeight * 0.8), 1);
+          }
+
+          // Only trigger mouse-following cursor if we have scrolled past the About section
+          const isScrollInProjects = scrollY > (viewportHeight * 1.3) || progressShrink >= 0.95;
+
+          if (isHoveringProjects && isScrollInProjects) {
+            // Smooth pointer following
+            followerX += (mouseX - followerX) * 0.15;
+            followerY += (mouseY - followerY) * 0.15;
+
+            expandingCircle.style.left = `${followerX}px`;
+            expandingCircle.style.top = `${followerY}px`;
+            expandingCircle.style.opacity = '1';
+            expandingCircle.style.transform = 'translate(-50%, -50%) scale(0.25)';
+            expandingCircle.style.backgroundColor = '#ff4d3d';
+            expandingCircle.style.boxShadow = '0 0 20px #ff4d3d, 0 0 40px #ff4d3d';
+            if (projectsBg) projectsBg.style.opacity = '1';
+            return;
+          } else {
+            expandingCircle.style.boxShadow = 'none';
+          }
+
+          if (scrollY > viewportHeight * 0.95) {
+            // Phase 2: Shrink circle as we scroll further down towards projects
+            const maxScale = 66;
+            const minScale = 0.25;
+            const scale = maxScale - progressShrink * (maxScale - minScale);
+
+            // Anchor to center of viewport during shrinking
+            expandingCircle.style.left = '50%';
+            expandingCircle.style.top = '50%';
+            expandingCircle.style.opacity = progressShrink > 0.95 ? '0' : '1';
+            expandingCircle.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            expandingCircle.style.backgroundColor = '#630511';
+          } else if (progressExpand > 0.01) {
+            // Phase 1: Expand circle
+            const rect = parentNode.getBoundingClientRect();
+            const parentCenterX = rect.left + rect.width / 2;
+            const parentCenterY = rect.top + rect.height / 2;
+
+            expandingCircle.style.left = `${parentCenterX}px`;
+            expandingCircle.style.top = `${parentCenterY}px`;
+            expandingCircle.style.opacity = '1';
+
+            if (progressExpand >= 0.5) {
+              expandingCircle.style.backgroundColor = '#630511';
+            } else {
+              expandingCircle.style.backgroundColor = '#ff4d3d';
+            }
+
+            const scale = 1 + Math.pow(progressExpand, 3.5) * 65;
+            expandingCircle.style.transform = `translate(-50%, -50%) scale(${scale})`;
+          } else {
+            // Hidden at top
+            expandingCircle.style.opacity = '0';
+            expandingCircle.style.transform = 'translate(-50%, -50%) scale(1)';
+            expandingCircle.style.backgroundColor = '#ff4d3d';
+          }
+
+          // Dynamically fade in the Projects black background in sync with shrink progress
+          if (projectsBg) {
+            projectsBg.style.opacity = progressShrink.toString();
+          }
+
+          // Dynamically fade the About section background to black in sync with shrink progress
+          if (aboutSection) {
+            if (progressShrink > 0.01) {
+              aboutSection.style.backgroundColor = `rgba(7, 5, 3, ${progressShrink})`;
+            } else {
+              aboutSection.style.backgroundColor = 'transparent';
+            }
+          }
+
+          // Transition body background color smoothly
+          if (progressShrink > 0.1) {
+            // Fade body background to projects black as circle shrinks
+            document.body.style.backgroundColor = '#070503';
+          } else if (progressExpand >= 0.75) {
+            document.body.style.backgroundColor = '#630511';
+          } else {
+            document.body.style.backgroundColor = '#0e1a2f';
+          }
+        }
+
+        updateLoop();
+      });
+    </script>
+  </body>
+</html>

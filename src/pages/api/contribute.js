@@ -14,12 +14,13 @@ export const POST = async ({ request }) => {
   }
 
   const payload = await request.json();
+  const files = payload.files; // Optional array of { path, content }
   const path = String(payload.path || '').trim();
   const content = String(payload.content || '').trim();
-  const commitMessage = String(payload.commitMessage || `Proposed contribution for ${path}`);
+  const commitMessage = String(payload.commitMessage || `Proposed contribution`);
   const prDescription = String(payload.prDescription || `Contribution proposed by ${payload.contributor || 'unknown contributor'}.`);
 
-  if (!path || !content) {
+  if ((!files || !files.length) && (!path || !content)) {
     return new Response(JSON.stringify({ error: 'Missing path or content' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
   }
 
@@ -35,23 +36,51 @@ export const POST = async ({ request }) => {
     // Create the branch in the target repo (fork or base) before updating/creating content
     await createBranch(session.access_token, forkOwner, branchName);
 
-    let sha;
-    try {
-      const info = await getFileInfo(session.access_token, REPO_USER, path);
-      if (info && info.sha) sha = info.sha;
-    } catch (error) {
-      if (error.status !== 404) throw error;
-    }
+    if (Array.isArray(files) && files.length > 0) {
+      // Multiple files upload
+      for (const file of files) {
+        const filePath = String(file.path || '').trim();
+        const fileContent = String(file.content || '').trim();
+        if (!filePath || !fileContent) continue;
 
-    await upsertFileContent({
-      token: session.access_token,
-      owner: forkOwner,
-      path,
-      branch: branchName,
-      content,
-      message: commitMessage,
-      sha,
-    });
+        let sha;
+        try {
+          const info = await getFileInfo(session.access_token, REPO_USER, filePath);
+          if (info && info.sha) sha = info.sha;
+        } catch (error) {
+          if (error.status !== 404) throw error;
+        }
+
+        await upsertFileContent({
+          token: session.access_token,
+          owner: forkOwner,
+          path: filePath,
+          branch: branchName,
+          content: fileContent,
+          message: `Add/update file: ${filePath}`,
+          sha,
+        });
+      }
+    } else {
+      // Single file fallback
+      let sha;
+      try {
+        const info = await getFileInfo(session.access_token, REPO_USER, path);
+        if (info && info.sha) sha = info.sha;
+      } catch (error) {
+        if (error.status !== 404) throw error;
+      }
+
+      await upsertFileContent({
+        token: session.access_token,
+        owner: forkOwner,
+        path,
+        branch: branchName,
+        content,
+        message: commitMessage,
+        sha,
+      });
+    }
 
     const pr = await createPullRequest({
       token: session.access_token,
@@ -60,7 +89,9 @@ export const POST = async ({ request }) => {
 
 Proposed by @${contributor}.
 
-This contribution updates or creates the file: \`${path}\`.`,
+file: \`${path || (files && files[0] ? files[0].path : 'multiple files')}\`
+
+This contribution proposes changes to files inside the vault branch.`,
       head: `${forkOwner}:${branchName}`,
       base: 'main',
     });

@@ -18,20 +18,39 @@ export const GET = async ({ request }) => {
     if (!resp.ok) throw new Error('Failed to fetch PRs');
     const prs = await resp.json();
     
-    const contributions = prs.filter(pr => pr.title.startsWith('Add ') || pr.title.startsWith('Proposed contribution')).map(pr => {
-      // Parse title: "Add Article resource: test5"
+    const contributions = prs.filter(pr => {
+      const isAuthor = pr.user && pr.user.login.toLowerCase() === username.toLowerCase();
+      if (!isAuthor) return false;
+      const t = pr.title.toLowerCase();
+      return t.startsWith('add ') || t.startsWith('proposed contribution') || t.startsWith('propose');
+    }).map(pr => {
       let type = 'resource';
       let title = pr.title;
-      
+
       const fileIdMatch = pr.body ? pr.body.match(/file: `(.*?)`/) : null;
-      let fileId = fileIdMatch ? fileIdMatch[1] : 'Unknown note';
-      
-      const match = pr.title.match(/Add (.*?) resource: (.*)/);
-      if (match) {
-        type = match[1].toLowerCase();
-        title = match[2];
-      } else if (pr.title.startsWith('Proposed contribution')) {
-        title = 'Pending Resource in ' + fileId.split('/').pop().replace('.md', '');
+      let fileId = fileIdMatch ? fileIdMatch[1] : 'Unknown path';
+
+      const titleLower = pr.title.toLowerCase();
+
+      if (pr.title.startsWith('Add Note:') || titleLower.startsWith('propose note')) {
+        type = 'note';
+        const rawTitle = pr.title.replace(/Add Note:|Propose note:/i, '').trim();
+        title = rawTitle.split(' - ')[0];
+      } else if (pr.title.startsWith('Add Branch:') || titleLower.includes('branch')) {
+        type = 'branch';
+        const rawTitle = pr.title.replace(/Add Branch:|Propose new folder branch structure/i, '').trim();
+        title = rawTitle ? rawTitle.split(' - ')[0] : 'Proposed branch';
+        if (!title || title.trim() === '') {
+          title = 'Proposed Branch Structure';
+        }
+      } else {
+        const match = pr.title.match(/Add (.*?) resource: (.*)/i);
+        if (match) {
+          type = match[1].toLowerCase();
+          title = match[2];
+        } else if (pr.title.startsWith('Proposed contribution')) {
+          title = 'Pending Resource in ' + fileId.split('/').pop().replace('.md', '');
+        }
       }
       
       let status = 'WAITING FOR APPROVAL';

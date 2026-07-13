@@ -125,6 +125,7 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/vis-network@10.1.0/standalone/umd/vis-network.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
       html, body { background-color: #071621; color: #e7edf8; margin: 0; padding: 0; min-height: 100%; }
       body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
@@ -296,7 +297,10 @@ try {
         </div>
         <div>
           <div id="vault-structure-container">
-            <p class="text-[11px] uppercase tracking-[0.35em] text-[#7c98d9] mb-4">Graphs</p>
+            <div class="flex items-center justify-between mb-4">
+              <p class="text-[11px] uppercase tracking-[0.35em] text-[#7c98d9]">Graphs</p>
+              <button onclick="window.fitGlobalGraph()" title="Zoom out and reset graph view" class="text-[10px] uppercase tracking-widest text-[#7c98d9] hover:text-white transition-colors duration-200 focus:outline-none bg-[#0a1e3f] hover:bg-[#12315e] border border-[#1a3866] px-2 py-1 rounded">Reset View</button>
+            </div>
             <ul id="vault-structure" class="space-y-4 text-sm text-slate-200"></ul>
           </div>
           <div id="search-results-container" class="hidden">
@@ -304,13 +308,34 @@ try {
             <ul id="search-results-list" class="space-y-2 text-sm text-slate-200"></ul>
           </div>
         </div>
-        <p class="mt-auto text-[11px] uppercase tracking-[0.35em] text-[#7c98d9]">GlobalGraph</p>
+        
+        <div class="mt-auto pt-8 flex flex-col gap-4">
+          <button onclick="document.getElementById('contribution-modal').classList.remove('hidden')" class="text-left text-[13px] font-medium text-slate-400 hover:text-[#8ecae6] transition-colors flex items-center gap-3">
+             <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+             About Contribution
+          </button>
+          <a href="/about" class="text-left text-[13px] font-medium text-slate-400 hover:text-[#8ecae6] transition-colors flex items-center gap-3">
+             <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+             About Me
+          </a>
+        </div>
       </aside>
 
-      <main class="relative overflow-hidden bg-[#04162c] p-6">
+      <main class="relative overflow-hidden bg-[#04162c]">
         <div class="absolute right-6 top-6 z-20" id="auth-controls"></div>
-        <div class="rounded-[36px] border border-[#0f2c56] bg-[#051a33] shadow-[0_0_100px_rgba(0,0,0,0.45)] overflow-hidden h-full min-h-[calc(100vh-96px)]">
-          <div id="graph-canvas" class="relative h-full w-full"></div>
+        <div class="h-full w-full relative min-h-screen">
+          <div id="graph-canvas" class="relative h-full w-full min-h-screen"></div>
+          
+          <!-- Bottom Centered Button Pill Group -->
+          <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center bg-[#05162a]/95 border border-[#14325a] rounded-full px-1.5 py-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.6)] backdrop-blur-md">
+            <button onclick="window.openAddNodeModal()" class="px-6 py-2.5 rounded-full text-sm font-semibold tracking-wider text-[#d5e9ff] hover:bg-[#12315e]/70 hover:text-white transition-all cursor-pointer">
+              Add Node
+            </button>
+            <div class="h-6 w-px bg-[#14325a] mx-1"></div>
+            <button onclick="window.openAddBranchModal()" class="px-6 py-2.5 rounded-full text-sm font-semibold tracking-wider text-[#d5e9ff] hover:bg-[#12315e]/70 hover:text-white transition-all cursor-pointer">
+              Add Branch
+            </button>
+          </div>
         </div>
       </main>
     </div>
@@ -325,6 +350,35 @@ try {
         </div>
       </div>
     </div>
+
+    <div id="contribution-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity">
+      <div class="w-full max-w-2xl rounded-3xl border border-[#1b2f4f] bg-[#051a33] p-8 shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
+        <h3 class="text-2xl font-bold text-white mb-6 border-b border-[#1b2f4f] pb-4">About Contribution</h3>
+        <div class="space-y-6 text-slate-300 text-sm leading-relaxed">
+           <section>
+              <h4 class="text-lg font-semibold text-[#8ecae6] mb-2">Terms of Contribution</h4>
+              <p>By contributing to GaiaBasin Garden, you agree that your contributions will be licensed under the MIT License. You must only submit original work or work that you have the rights to share. We reserve the right to review, edit, or reject any submissions that do not meet our quality standards or code of conduct.</p>
+           </section>
+           <section>
+              <h4 class="text-lg font-semibold text-[#8ecae6] mb-2">Mechanism (Pull Requests)</h4>
+              <p>All contributions are managed via GitHub Pull Requests. When you create or edit a resource through this application, our backend automatically forks the repository, creates a new branch, commits your changes, and opens a Pull Request on your behalf. This ensures all changes undergo review before being merged into the global vault.</p>
+           </section>
+           <section>
+              <h4 class="text-lg font-semibold text-[#8ecae6] mb-2">How to Contribute</h4>
+              <ul class="list-disc pl-5 space-y-2 mt-2">
+                 <li><strong>Login:</strong> You must be authenticated via GitHub to contribute.</li>
+                 <li><strong>Adding Resources:</strong> Click the "Contribute" button while viewing a note to submit new articles, books, or courses to that topic.</li>
+                 <li><strong>Editing Notes:</strong> Click the edit icon on a note to propose changes to its content.</li>
+                 <li><strong>Review:</strong> After submission, you can track the status of your Pull Requests in your personal Account Dashboard.</li>
+              </ul>
+           </section>
+        </div>
+        <div class="mt-8 flex justify-end">
+          <button onclick="document.getElementById('contribution-modal').classList.add('hidden')" class="rounded-xl bg-[#1a4f7f] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#2b74b0] transition-colors">Close</button>
+        </div>
+      </div>
+    </div>
+
 
     <div id="auth-alert-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity">
       <div class="w-full max-w-md rounded-2xl border border-[#1b2f4f] bg-[#051a33] p-6 shadow-2xl">
@@ -430,6 +484,83 @@ try {
         </div>
       </div>
     </div>
+    <div id="add-node-modal" class="hidden fixed inset-0 z-60 bg-black/80 p-6 overflow-auto">
+      <div class="mx-auto max-w-2xl rounded-[32px] border border-[#1e314e] bg-[#061525] shadow-2xl">
+        <div class="flex flex-col gap-4 border-b border-[#17324b] px-6 py-5 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-2xl font-semibold text-white">Add Node (Propose Note)</p>
+            <p class="mt-1 text-sm text-slate-400">Add a new markdown note to an existing folder via Pull Request.</p>
+          </div>
+          <button onclick="window.closeAddNodeModal()" class="rounded-2xl border border-[#2b4d7b] bg-[#0d2a53] px-4 py-2 text-sm text-slate-100 hover:bg-[#1c4a82]">Cancel</button>
+        </div>
+        <div class="space-y-4 px-6 py-5">
+          <label class="block text-sm font-medium text-slate-300">Select Folder</label>
+          <select id="new-node-folder" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none appearance-none"></select>
+          
+          <label class="block text-sm font-medium text-slate-300">Pull Request Description</label>
+          <textarea id="new-node-pr-desc" rows="2" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="Provide context about this new note..."></textarea>
+
+          <label class="block text-sm font-medium text-slate-300">Commit Message</label>
+          <input id="new-node-commit" type="text" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="Add new note" />
+
+          <label class="block text-sm font-medium text-slate-300">Note Title</label>
+          <input id="new-node-title" type="text" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="e.g. Singleton Pattern" />
+
+          <div class="flex justify-between items-center">
+            <label class="block text-sm font-medium text-slate-300">Markdown Content</label>
+            <div id="new-node-upload-status" class="flex items-center gap-2">
+              <span id="new-node-upload-or-text" class="text-xs text-slate-500 font-semibold uppercase tracking-wider transition-opacity duration-200">or</span>
+              <button id="new-node-upload-btn" onclick="window.handleNodeUploadClick()" type="button" class="text-xs font-semibold text-[#8ecae6] hover:text-white transition-colors bg-white/5 border border-white/10 rounded-full px-3.5 py-1.5 cursor-pointer flex items-center gap-1.5 transition-all duration-200">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Upload File (.md)
+              </button>
+              <input type="file" id="new-node-file-upload" accept=".md" class="hidden" onchange="window.handleNodeFileUpload(this)" />
+            </div>
+          </div>
+          <textarea id="new-node-content" rows="8" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 font-mono text-sm focus:border-[#5c7aff] outline-none" placeholder="# Note Title&#10;&#10;Write content here..."></textarea>
+          
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-2">
+            <p id="new-node-status" class="text-sm text-slate-400"></p>
+            <button onclick="window.submitNewNode()" class="rounded-3xl bg-[#1a4f7f] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#d5e9ff] hover:bg-[#2b74b0]">Submit Proposol</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="add-branch-modal" class="hidden fixed inset-0 z-60 bg-black/80 p-6 overflow-auto">
+      <div class="mx-auto max-w-2xl rounded-[32px] border border-[#1e314e] bg-[#061525] shadow-2xl">
+        <div class="flex flex-col gap-4 border-b border-[#17324b] px-6 py-5 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-2xl font-semibold text-white">Add Branch (Upload Folders)</p>
+            <p class="mt-1 text-sm text-slate-400">Propose a new branch structure by uploading a local folder.</p>
+          </div>
+          <button onclick="window.closeAddBranchModal()" class="rounded-2xl border border-[#2b4d7b] bg-[#0d2a53] px-4 py-2 text-sm text-slate-100 hover:bg-[#1c4a82]">Cancel</button>
+        </div>
+        <div class="space-y-4 px-6 py-5">
+          <label class="block text-sm font-medium text-slate-300">Select Parent Location</label>
+          <select id="new-branch-parent" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none appearance-none"></select>
+          
+          <label class="block text-sm font-medium text-slate-300">Upload Folder to Contribute</label>
+          <input type="file" id="new-branch-upload" webkitdirectory directory multiple class="hidden" onchange="window.handleBranchFolderUpload(this)" />
+          <div onclick="document.getElementById('new-branch-upload').click()" class="border-2 border-dashed border-[#1f2f4f] bg-[#071625] hover:border-[#5c7aff] transition-all rounded-3xl p-8 flex flex-col items-center justify-center gap-2 cursor-pointer group">
+            <svg class="w-10 h-10 text-slate-500 group-hover:text-[#8ecae6] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="text-sm text-slate-400 group-hover:text-slate-200 text-center" id="upload-box-text">Click to select a folder from your computer</span>
+            <span class="text-xs text-slate-500">Only markdown (.md) files will be extracted</span>
+          </div>
+
+          <label class="block text-sm font-medium text-slate-300">Commit Message</label>
+          <input id="new-branch-commit" type="text" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="Propose new folder branch structure" />
+          
+          <label class="block text-sm font-medium text-slate-300">Pull Request Description</label>
+          <textarea id="new-branch-pr-desc" rows="2" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="Provide context about this new folder structure..."></textarea>
+          
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-2">
+            <p id="new-branch-status" class="text-sm text-slate-400"></p>
+            <button onclick="window.submitNewBranch()" class="rounded-3xl bg-[#1a4f7f] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#d5e9ff] hover:bg-[#2b74b0]">Submit Branch</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div id="account-modal" class="hidden fixed inset-0 z-60 bg-[#071621] overflow-auto flex flex-col">
       <div class="flex items-center justify-between border-b border-[#1e314e] bg-[#061525] px-6 py-4 shrink-0">
@@ -446,6 +577,7 @@ try {
           <button onclick="window.setAccountTab('article')" id="acc-tab-article" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Added Articles</button>
           <button onclick="window.setAccountTab('course')" id="acc-tab-course" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Added Courses</button>
           <button onclick="window.setAccountTab('note')" id="acc-tab-note" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Added Notes</button>
+          <button onclick="window.setAccountTab('branch')" id="acc-tab-branch" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Added Branches</button>
           <div class="flex-1 hidden md:block"></div>
           <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-2 md:mt-0">Account</p>
           <button onclick="window.setAccountTab('statistics')" id="acc-tab-statistics" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Statistics</button>
@@ -568,7 +700,7 @@ try {
       window.processedLinks = processedLinks;
       window.folderTree = folderTree;
       window.allResources = allResources;
-      // Clean up old cached deletions (>10 mins) and filter window.allResources
+      // Clean up old cached deletions (>10 mins) and filter window.allResources, processedNodes, processedLinks, folderTree
       try {
          const now = Date.now();
          let deletedList = JSON.parse(localStorage.getItem('gaiabasin_deleted_res') || '[]');
@@ -579,6 +711,36 @@ try {
             window.allResources = window.allResources.filter(r => 
                !deletedList.some(d => d.title === r.title && d.fileId === r.fileId)
             );
+
+            // Filter processedNodes
+            window.processedNodes = window.processedNodes.filter(n => {
+               const isDeleted = deletedList.some(d => {
+                  const delPath = d.fileId;
+                  return n.id === delPath || n.id.startsWith(delPath + '/');
+               });
+               return !isDeleted;
+            });
+
+            // Filter processedLinks
+            window.processedLinks = window.processedLinks.filter(l => {
+               const fromExists = window.processedNodes.some(n => n.id === l.from);
+               const toExists = window.processedNodes.some(n => n.id === l.to);
+               return fromExists && toExists;
+            });
+
+            // Filter folderTree
+            const filterTree = (node) => {
+               node.children = node.children.filter(child => {
+                  const isDeleted = deletedList.some(d => child.id === d.fileId || child.id.startsWith(d.fileId + '/'));
+                  return !isDeleted;
+               });
+               node.files = node.files.filter(file => {
+                  const isDeleted = deletedList.some(d => file.id === d.fileId);
+                  return !isDeleted;
+               });
+               node.children.forEach(filterTree);
+            };
+            filterTree(window.folderTree);
          }
       } catch (e) {}
       
@@ -715,6 +877,7 @@ try {
         const parent = group.closest('.tree-folder');
         group.classList.toggle('hidden');
         if (parent) parent.classList.toggle('folder-open');
+        window.setGraphFocus(folderId);
       };
 
       window.closeNodeViewer = () => {
@@ -891,6 +1054,27 @@ try {
         const commitMessage = `Add ${type} resource: ${title}`;
         const prDescription = `This PR adds a new ${type} resource to ${path}.`;
 
+        const tempPrNumber = 'temp-' + Date.now();
+        const tempPR = {
+          isPr: true,
+          type: type.toLowerCase(),
+          title: title,
+          url: '#',
+          status: 'WAITING FOR APPROVAL',
+          prNumber: tempPrNumber,
+          fileId: path,
+          author: window.auth.user.login,
+          incognito: isIncognito
+        };
+
+        try {
+          const localPRs = JSON.parse(sessionStorage.getItem('gaiabasin_local_prs') || '[]');
+          localPRs.push(tempPR);
+          sessionStorage.setItem('gaiabasin_local_prs', JSON.stringify(localPRs));
+          if (!window.userContributions) window.userContributions = [];
+          window.userContributions.push(tempPR);
+        } catch (e) {}
+
         window.setResourceStatus('Submitting pull request...');
 
         try {
@@ -906,6 +1090,23 @@ try {
           });
           const result = await resp.json();
           if (!resp.ok) throw new Error(result.error || 'Failed to submit');
+
+          try {
+            const localPRs = JSON.parse(sessionStorage.getItem('gaiabasin_local_prs') || '[]');
+            const idx = localPRs.findIndex(p => p.prNumber === tempPrNumber);
+            if (idx !== -1) {
+              localPRs[idx].url = result.prUrl;
+              localPRs[idx].prNumber = result.prNumber;
+            }
+            sessionStorage.setItem('gaiabasin_local_prs', JSON.stringify(localPRs));
+            if (window.userContributions) {
+              const mIdx = window.userContributions.findIndex(p => p.prNumber === tempPrNumber);
+              if (mIdx !== -1) {
+                window.userContributions[mIdx].url = result.prUrl;
+                window.userContributions[mIdx].prNumber = result.prNumber;
+              }
+            }
+          } catch (e) {}
           
           window.setResourceStatus(`PR created! <a href="${result.prUrl}" target="_blank" class="text-blue-400 underline hover:text-blue-300">View Pull Request</a>.`);
           
@@ -944,6 +1145,14 @@ try {
           }, 5000);
           
         } catch (err) {
+          try {
+            const localPRs = JSON.parse(sessionStorage.getItem('gaiabasin_local_prs') || '[]');
+            const filtered = localPRs.filter(p => p.prNumber !== tempPrNumber);
+            sessionStorage.setItem('gaiabasin_local_prs', JSON.stringify(filtered));
+            if (window.userContributions) {
+              window.userContributions = window.userContributions.filter(p => p.prNumber !== tempPrNumber);
+            }
+          } catch (e) {}
           console.error('Resource submission error:', err);
           window.setResourceStatus('Contribution failed. Please try again.', true);
         }
@@ -1088,6 +1297,24 @@ try {
 
   if (tab === 'credits') {
     const authors = new Set();
+    
+    // Parse main note frontmatter author
+    let noteAuthor = null;
+    const frontmatterMatch = window.currentRawNote.match(/^---([\s\S]*?)---/);
+    if (frontmatterMatch) {
+      const fmLines = frontmatterMatch[1].split('\n');
+      for (const fml of fmLines) {
+        const trimmedFml = fml.trim();
+        if (trimmedFml.startsWith('author:')) {
+          noteAuthor = trimmedFml.replace('author:', '').replace(/["']/g, '').trim();
+          break;
+        }
+      }
+    }
+    if (noteAuthor) {
+      authors.add(noteAuthor);
+    }
+
     matches.forEach(m => {
        if (m.author) {
           if (m.incognito) authors.add('Anonymous Contributor');
@@ -1098,7 +1325,7 @@ try {
     if (authors.size > 0) {
       readerBody.innerHTML = `
         <h2 class="text-xl font-bold mb-4 capitalize">Credits</h2>
-        <p class="text-slate-400 mb-6">The following users have contributed resources to this note:</p>
+        <p class="text-slate-400 mb-6">The following users have contributed to this note:</p>
         <ul class="space-y-3">
           ${Array.from(authors).map(author => `
             <li class="p-4 bg-[#0a2336] rounded-xl border border-[#1b3e63] flex items-center gap-4">
@@ -1449,7 +1676,7 @@ try {
 
       window.setAccountTab = (tab) => {
          window.currentAccountTab = tab;
-         const tabs = ['all', 'book', 'article', 'course', 'note', 'statistics', 'settings'];
+         const tabs = ['all', 'book', 'article', 'course', 'note', 'branch', 'statistics', 'settings'];
          tabs.forEach(t => {
             const el = document.getElementById('acc-tab-' + t);
             if (!el) return;
@@ -1480,10 +1707,41 @@ try {
          }
       };
 
+      window.getCombinedResources = () => {
+         let myResources = window.allResources.filter(r => r.author === window.auth.user.login);
+         
+         let liveContributions = window.userContributions || [];
+         let deletedList = [];
+         try {
+            deletedList = JSON.parse(localStorage.getItem('gaiabasin_deleted_res') || '[]');
+         } catch(e) {}
+         
+         let combined = [...myResources];
+         
+         liveContributions.forEach(pr => {
+            const isDeleted = deletedList.some(d => d.title === pr.title && d.fileId === pr.fileId);
+            if (isDeleted) return;
+            
+            const exists = combined.find(r => r.title === pr.title && r.fileId === pr.fileId && !r.isPr);
+            if (!exists) {
+               combined.push(pr);
+            } else if (pr.status === 'CONTRIBUTED' && exists) {
+               exists.status = 'CONTRIBUTED';
+            }
+         });
+
+         // Strictly exclude deleted resources
+         combined = combined.filter(r => {
+            return !deletedList.some(d => d.title === r.title && d.fileId === r.fileId);
+         });
+
+         return combined;
+      };
+
       window.renderAccountStatistics = () => {
-         const myResources = window.allResources.filter(r => r.author === window.auth.user.login);
+         const combined = window.getCombinedResources();
          const stats = document.getElementById('account-statistics');
-         const counts = myResources.reduce((acc, r) => {
+         const counts = combined.reduce((acc, r) => {
              const type = (r.type || 'unknown').toLowerCase();
              acc[type] = (acc[type] || 0) + 1;
              return acc;
@@ -1493,12 +1751,12 @@ try {
            <h3 class="text-3xl font-bold text-white mb-8">Your Contribution Statistics</h3>
            <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
              <div class="bg-[#0a2336] rounded-2xl border border-[#1b3e63] p-8 shadow-lg">
-                <p class="text-xs text-[#8ecae6] font-bold uppercase tracking-[0.2em]">Total Resources</p>
-                <p class="text-6xl font-black text-white mt-4">${myResources.length}</p>
+                <p class="text-xs text-[#8ecae6] font-bold uppercase tracking-[0.2em]">Total Contributions</p>
+                <p class="text-6xl font-black text-white mt-4">${combined.length}</p>
              </div>
              ${Object.entries(counts).map(([type, count]) => `
                <div class="bg-[#0a2336] rounded-2xl border border-[#1b3e63] p-8 shadow-lg">
-                  <p class="text-xs text-slate-400 font-bold uppercase tracking-[0.2em]">${type}s</p>
+                  <p class="text-xs text-slate-400 font-bold uppercase tracking-[0.2em] capitalize">${type}s</p>
                   <p class="text-5xl font-bold text-[#8ecae6] mt-4">${count}</p>
                </div>
              `).join('')}
@@ -1529,35 +1787,7 @@ try {
       };
 
       window.renderAccountResources = (tab) => {
-        let myResources = window.allResources.filter(r => r.author === window.auth.user.login);
-        
-        let liveContributions = window.userContributions || [];
-        let deletedList = [];
-        try {
-           deletedList = JSON.parse(localStorage.getItem('gaiabasin_deleted_res') || '[]');
-        } catch(e) {}
-        
-        let combined = [...myResources];
-        
-        liveContributions.forEach(pr => {
-           const isDeleted = deletedList.some(d => d.title === pr.title);
-           if (isDeleted) return;
-           
-           const exists = combined.find(r => r.title === pr.title && !r.isPr);
-           if (!exists) {
-              if (pr.status !== 'CONTRIBUTED') {
-                 combined.push(pr);
-              } else if (pr.mergedAt) {
-                 const mergedTime = new Date(pr.mergedAt).getTime();
-                 if (Date.now() - mergedTime < 15 * 60 * 1000) {
-                    // Merged within last 15 mins, CDN might be lagging, show it
-                    combined.push(pr);
-                 }
-              }
-           } else if (pr.status === 'CONTRIBUTED' && exists) {
-              exists.status = 'CONTRIBUTED';
-           }
-        });
+        let combined = window.getCombinedResources();
         
         // Sort newest first (PRs first, then reverse myResources)
         combined.sort((a, b) => {
@@ -1598,7 +1828,7 @@ try {
                    ${r.fileId}
                 </p>
               </div>
-              ${displayStatus === 'CONTRIBUTED' && !r.isPr ? `<button onclick="window.deleteResource('${r.fileId}', '${r.title.replace(/'/g, "\\'")}', '${r.url.replace(/'/g, "\\'")}', this)" class="shrink-0 rounded-full bg-rose-900/40 border border-rose-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-rose-200 hover:bg-rose-800 transition-colors focus:ring-2 focus:ring-rose-500 focus:outline-none">Delete</button>` : ''}
+              ${displayStatus === 'NOT APPROVED' || displayStatus === 'CONTRIBUTED' ? `<button onclick="window.deleteResource('${r.fileId}', '${r.title.replace(/'/g, "\\'")}', '${r.url.replace(/'/g, "\\'")}', this, '${r.type}', '${displayStatus}', ${!!r.isPr})" class="shrink-0 rounded-full bg-rose-900/40 border border-rose-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-rose-200 hover:bg-rose-800 transition-colors focus:ring-2 focus:ring-rose-500 focus:outline-none">Delete</button>` : ''}
             </li>
             `}).join('');
         }
@@ -1617,13 +1847,16 @@ try {
         
         try {
            const resp = await fetch(`/api/userContributions?username=${window.auth.user.login}&t=${Date.now()}`);
+           let apiPRs = [];
            if (resp.ok) {
-              window.userContributions = await resp.json();
-           } else {
-              window.userContributions = [];
+              apiPRs = await resp.json();
            }
+           const localPRs = JSON.parse(sessionStorage.getItem('gaiabasin_local_prs') || '[]');
+           const filteredLocal = localPRs.filter(l => !apiPRs.some(a => a.url === l.url));
+           sessionStorage.setItem('gaiabasin_local_prs', JSON.stringify(filteredLocal));
+           window.userContributions = [...apiPRs, ...filteredLocal];
         } catch(e) {
-           window.userContributions = [];
+           window.userContributions = JSON.parse(sessionStorage.getItem('gaiabasin_local_prs') || '[]');
         }
         
         window.setAccountTab('all');
@@ -1640,7 +1873,7 @@ try {
         document.getElementById('delete-modal').classList.add('hidden');
       };
 
-      window.deleteResource = async (fileId, title, url, btnElement) => {
+      window.deleteResource = async (fileId, title, url, btnElement, type = 'resource', status = 'CONTRIBUTED', isPr = false) => {
         const modal = document.getElementById('delete-modal');
         document.getElementById('delete-modal-title').innerText = title;
         modal.classList.remove('hidden');
@@ -1657,13 +1890,16 @@ try {
           btnElement.disabled = true;
 
           try {
-            const resp = await fetch('/api/directDelete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ path: fileId, title: title })
-            });
-            const result = await resp.json();
-            if (!resp.ok) throw new Error(result.error || 'Deletion failed');
+            const isResourcePR = isPr && type === 'resource';
+            if (status !== 'NOT APPROVED' && !isResourcePR) {
+              const resp = await fetch('/api/directDelete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: fileId, title: title, type: type })
+              });
+              const result = await resp.json();
+              if (!resp.ok) throw new Error(result.error || 'Deletion failed');
+            }
             
             btnElement.innerText = "Deleted Successfully";
             btnElement.classList.replace("bg-rose-900/40", "bg-emerald-900/40");
@@ -1679,6 +1915,30 @@ try {
 
             // Dynamically remove from the local state
             window.allResources = window.allResources.filter(r => r.title !== title || r.fileId !== fileId);
+
+            // Filter window.processedNodes and window.processedLinks
+            window.processedNodes = window.processedNodes.filter(n => {
+               return n.id !== fileId && !n.id.startsWith(fileId + '/');
+            });
+            window.processedLinks = window.processedLinks.filter(l => {
+               const fromExists = window.processedNodes.some(n => n.id === l.from);
+               const toExists = window.processedNodes.some(n => n.id === l.to);
+               return fromExists && toExists;
+            });
+
+            // Filter window.folderTree
+            const filterTree = (node) => {
+               node.children = node.children.filter(child => child.id !== fileId && !child.id.startsWith(fileId + '/'));
+               node.files = node.files.filter(file => file.id !== fileId);
+               node.children.forEach(filterTree);
+            };
+            filterTree(window.folderTree);
+
+            // Re-render sidebar tree and interactive graph immediately
+            window.populateVaultTree();
+            if (window.graphNetwork) {
+               window.createMainGraph(null, null, null);
+            }
             
             // Refresh Account Dashboard tab
             if (window.currentAccountTab && !document.getElementById('account-modal').classList.contains('hidden')) {
@@ -1776,6 +2036,655 @@ try {
           });
         };
 
+        // Add Node Modal handlers
+        window.uploadedNodeFile = null;
+
+        window.openAddNodeModal = () => {
+          if (!window.auth?.user) {
+            window.showAuthAlert("Only logged in users can add notes.");
+            return;
+          }
+
+          // Clear uploaded file state
+          if (window.uploadedNodeFile) {
+            window.removeUploadedNodeFile();
+          } else {
+            // Re-enable and reset fields just in case
+            const titleInput = document.getElementById('new-node-title');
+            const contentTextarea = document.getElementById('new-node-content');
+            titleInput.value = '';
+            titleInput.disabled = false;
+            titleInput.classList.remove('opacity-50', 'cursor-not-allowed');
+            contentTextarea.value = '';
+            contentTextarea.disabled = false;
+            contentTextarea.classList.remove('opacity-50', 'cursor-not-allowed');
+          }
+
+          document.getElementById('new-node-commit').value = 'Add new note';
+          document.getElementById('new-node-pr-desc').value = '';
+          document.getElementById('new-node-status').innerText = '';
+
+          const folderSelect = document.getElementById('new-node-folder');
+          if (folderSelect) {
+            const folders = processedNodes.filter(n => n.isFolder);
+            folderSelect.innerHTML = folders.map(f => `<option value="${f.id}">${f.label} (${f.id})</option>`).join('');
+          }
+
+          document.getElementById('add-node-modal').classList.remove('hidden');
+          document.body.style.overflow = 'hidden';
+          window.updateUploadButtonState();
+        };
+
+        window.closeAddNodeModal = () => {
+          document.getElementById('add-node-modal').classList.add('hidden');
+          document.body.style.overflow = '';
+        };
+
+        window.handleNodeUploadClick = () => {
+          if (window.uploadedNodeFile) {
+            alert("For adding multiple notes please click Add Branch");
+            return;
+          }
+          document.getElementById('new-node-file-upload').click();
+        };
+
+        window.handleNodeFileUpload = (input) => {
+          const file = input.files[0];
+          if (!file) return;
+          if (!file.name.toLowerCase().endsWith('.md')) {
+            alert("Please select a markdown (.md) file.");
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            window.uploadedNodeFile = file;
+
+            const titleInput = document.getElementById('new-node-title');
+            const contentTextarea = document.getElementById('new-node-content');
+
+            // Fill inputs
+            contentTextarea.value = e.target.result;
+            const titleWithoutExt = file.name.slice(0, -3);
+            titleInput.value = titleWithoutExt;
+
+            // Lock inputs
+            titleInput.disabled = true;
+            contentTextarea.disabled = true;
+            titleInput.classList.add('opacity-50', 'cursor-not-allowed');
+            contentTextarea.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Display filename & delete button
+            const statusContainer = document.getElementById('new-node-upload-status');
+            statusContainer.innerHTML = `
+              <span class="text-xs text-slate-300 bg-[#0a2336] border border-[#1b3e63] px-3 py-1.5 rounded-full flex items-center gap-2">
+                <span class="font-semibold text-emerald-400">📄 ${file.name}</span>
+                <button onclick="event.stopPropagation(); event.preventDefault(); window.removeUploadedNodeFile()" type="button" class="text-rose-400 hover:text-rose-300 font-bold ml-2 p-1 cursor-pointer transition-colors" title="Remove uploaded file">✕</button>
+              </span>
+            `;
+          };
+          reader.readAsText(file);
+        };
+
+        window.removeUploadedNodeFile = () => {
+          window.uploadedNodeFile = null;
+
+          const titleInput = document.getElementById('new-node-title');
+          const contentTextarea = document.getElementById('new-node-content');
+
+          // Reset inputs
+          titleInput.value = '';
+          titleInput.disabled = false;
+          titleInput.classList.remove('opacity-50', 'cursor-not-allowed');
+
+          contentTextarea.value = '';
+          contentTextarea.disabled = false;
+          contentTextarea.classList.remove('opacity-50', 'cursor-not-allowed');
+
+          const fileInput = document.getElementById('new-node-file-upload');
+          if (fileInput) fileInput.value = '';
+
+          // Re-render upload button
+          const statusContainer = document.getElementById('new-node-upload-status');
+          statusContainer.innerHTML = `
+            <span id="new-node-upload-or-text" class="text-xs text-slate-500 font-semibold uppercase tracking-wider transition-opacity duration-200">or</span>
+            <button id="new-node-upload-btn" onclick="window.handleNodeUploadClick()" type="button" class="text-xs font-semibold text-[#8ecae6] hover:text-white transition-colors bg-white/5 border border-white/10 rounded-full px-3.5 py-1.5 cursor-pointer flex items-center gap-1.5 transition-all duration-200">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              Upload File (.md)
+            </button>
+            <input type="file" id="new-node-file-upload" accept=".md" class="hidden" onchange="window.handleNodeFileUpload(this)" />
+          `;
+          window.updateUploadButtonState();
+        };
+
+        window.updateUploadButtonState = () => {
+          const titleVal = document.getElementById('new-node-title').value.trim();
+          const contentVal = document.getElementById('new-node-content').value;
+          const isTyping = titleVal.length > 0 || contentVal.trim().length > 0;
+
+          const btn = document.getElementById('new-node-upload-btn');
+          const orText = document.getElementById('new-node-upload-or-text');
+          if (btn) {
+            if (isTyping && !window.uploadedNodeFile) {
+              btn.disabled = true;
+              btn.classList.add('opacity-30', 'cursor-not-allowed', 'pointer-events-none');
+              if (orText) orText.classList.add('opacity-30');
+            } else {
+              btn.disabled = false;
+              btn.classList.remove('opacity-30', 'cursor-not-allowed', 'pointer-events-none');
+              if (orText) orText.classList.remove('opacity-30');
+            }
+          }
+        };
+
+        window.submitNewNode = async () => {
+          const folder = document.getElementById('new-node-folder').value;
+          const commitMessage = document.getElementById('new-node-commit').value.trim();
+          const prDescription = document.getElementById('new-node-pr-desc').value.trim();
+          const statusEl = document.getElementById('new-node-status');
+
+          let title = '';
+          let content = '';
+
+          if (window.uploadedNodeFile) {
+            title = window.uploadedNodeFile.name;
+            if (title.toLowerCase().endsWith('.md')) {
+              title = title.slice(0, -3);
+            }
+            content = document.getElementById('new-node-content').value;
+          } else {
+            title = document.getElementById('new-node-title').value.trim();
+            content = document.getElementById('new-node-content').value;
+
+            if (!title || !content) {
+              statusEl.innerText = 'Title and content are required.';
+              statusEl.className = 'text-sm text-rose-300';
+              return;
+            }
+          }
+
+          // Build clean path
+          let path = '';
+          if (folder === 'root') {
+            path = `${title}.md`;
+          } else {
+            path = `${folder}/${title}.md`;
+          }
+
+          // Inject author: username in YAML frontmatter
+          const nickname = window.auth?.user?.login || 'anonymous';
+          const authorLine = `author: ${nickname}`;
+          let processedContent = content;
+          const fmMatch = content.match(/^---([\s\S]*?)---/);
+          if (fmMatch) {
+            const innerFm = fmMatch[1];
+            if (!innerFm.includes('author:')) {
+              processedContent = content.replace(/^---/, `---\n${authorLine}`);
+            }
+          } else {
+            processedContent = `---\n${authorLine}\n---\n${content}`;
+          }
+
+          const tempPrNumber = 'temp-' + Date.now();
+          const tempPR = {
+            isPr: true,
+            type: 'note',
+            title: title,
+            url: '#',
+            status: 'WAITING FOR APPROVAL',
+            prNumber: tempPrNumber,
+            fileId: path,
+            author: nickname,
+            incognito: false
+          };
+
+          try {
+            const localPRs = JSON.parse(sessionStorage.getItem('gaiabasin_local_prs') || '[]');
+            localPRs.push(tempPR);
+            sessionStorage.setItem('gaiabasin_local_prs', JSON.stringify(localPRs));
+            if (!window.userContributions) window.userContributions = [];
+            window.userContributions.push(tempPR);
+          } catch (e) {}
+
+          statusEl.innerText = 'Submitting pull request...';
+          statusEl.className = 'text-sm text-slate-400';
+
+          try {
+            const response = await fetch('/api/contribute', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ path, content: processedContent, commitMessage: `Add Note: ${title} - ${commitMessage}`, prDescription })
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Submission failed');
+
+            try {
+              const localPRs = JSON.parse(sessionStorage.getItem('gaiabasin_local_prs') || '[]');
+              const idx = localPRs.findIndex(p => p.prNumber === tempPrNumber);
+              if (idx !== -1) {
+                localPRs[idx].url = result.prUrl;
+                localPRs[idx].prNumber = result.prNumber;
+              }
+              sessionStorage.setItem('gaiabasin_local_prs', JSON.stringify(localPRs));
+              if (window.userContributions) {
+                const mIdx = window.userContributions.findIndex(p => p.prNumber === tempPrNumber);
+                if (mIdx !== -1) {
+                  window.userContributions[mIdx].url = result.prUrl;
+                  window.userContributions[mIdx].prNumber = result.prNumber;
+                }
+              }
+            } catch (e) {}
+
+            statusEl.innerHTML = `PR Created! <a href="${result.prUrl}" target="_blank" class="text-blue-400 underline">View PR</a>`;
+            statusEl.className = 'text-sm text-[#8ecae6]';
+
+            setTimeout(() => {
+              window.closeAddNodeModal();
+            }, 3000);
+          } catch (err) {
+            try {
+              const localPRs = JSON.parse(sessionStorage.getItem('gaiabasin_local_prs') || '[]');
+              const filtered = localPRs.filter(p => p.prNumber !== tempPrNumber);
+              sessionStorage.setItem('gaiabasin_local_prs', JSON.stringify(filtered));
+              if (window.userContributions) {
+                window.userContributions = window.userContributions.filter(p => p.prNumber !== tempPrNumber);
+              }
+            } catch (e) {}
+            statusEl.innerText = err.message || 'Error proposing note.';
+            statusEl.className = 'text-sm text-rose-300';
+          }
+        };
+
+        // Add Branch Modal handlers
+        // Add Branch Modal handlers
+        window.openAddBranchModal = () => {
+          if (!window.auth?.user) {
+            window.showAuthAlert("Only logged in users can add folders.");
+            return;
+          }
+
+          window.selectedBranchFiles = [];
+          document.getElementById('new-branch-upload').value = '';
+          document.getElementById('upload-box-text').innerText = "Click to select a folder from your computer";
+          document.getElementById('new-branch-commit').value = 'Propose new folder branch structure';
+          document.getElementById('new-branch-pr-desc').value = '';
+          document.getElementById('new-branch-status').innerText = '';
+
+          const parentSelect = document.getElementById('new-branch-parent');
+          if (parentSelect) {
+            const folders = processedNodes.filter(n => n.isFolder);
+            parentSelect.innerHTML = `<option value="root">Base Vault (Root)</option>` + 
+              folders.filter(f => f.id !== 'root').map(f => `<option value="${f.id}">${f.label} (${f.id})</option>`).join('');
+          }
+
+          document.getElementById('add-branch-modal').classList.remove('hidden');
+          document.body.style.overflow = 'hidden';
+        };
+
+        window.closeAddBranchModal = () => {
+          document.getElementById('add-branch-modal').classList.add('hidden');
+          document.body.style.overflow = '';
+        };
+
+        window.isValidFolderName = (name) => {
+          if (!name || name.trim() === '') return false;
+          // Reject names that look like random hashes (8+ hex/alphanumeric characters)
+          const hashRegex = /^[a-f0-9]{8,}$/i;
+          if (hashRegex.test(name)) return false;
+
+          // Reject purely numeric names unless it's a year/date like 1900-2100
+          if (/^\d+$/.test(name)) {
+            const val = parseInt(name, 10);
+            if (val < 1900 || val > 2100) return false;
+          }
+
+          // Ensure it contains at least one letter (unless it's a year)
+          if (!/[a-zA-Z]/.test(name) && !(/^\d{4}$/.test(name))) return false;
+
+          // Reject sequences without vowels that are longer than 4 letters (gibberish strings)
+          const words = name.split(/[\s\-_]+/);
+          for (const word of words) {
+            if (word.length > 4 && !/[aeiouyAEIOUY]/i.test(word) && !/^\d+$/.test(word)) {
+              return false;
+            }
+          }
+          return true;
+        };
+
+        window.selectedBranchFiles = [];
+        window.handleBranchFolderUpload = (input) => {
+          const files = Array.from(input.files);
+          const mdFiles = files.filter(f => f.name.toLowerCase().endsWith('.md'));
+          if (mdFiles.length === 0) {
+            alert("No markdown (.md) files found in the selected folder.");
+            document.getElementById('upload-box-text').innerText = "Click to select a folder from your computer";
+            window.selectedBranchFiles = [];
+            return;
+          }
+
+          // Extract and validate all folder and subfolder names in relative paths
+          const folderNames = new Set();
+          for (const file of mdFiles) {
+            const segments = file.webkitRelativePath.split('/');
+            segments.pop(); // remove filename
+            segments.forEach(seg => {
+              if (seg) folderNames.add(seg);
+            });
+          }
+
+          for (const folderName of folderNames) {
+            if (!window.isValidFolderName(folderName)) {
+              alert(`Invalid folder or subfolder name detected: "${folderName}".\nFolder names must be readable names, not random letters or numbers.`);
+              document.getElementById('upload-box-text').innerText = "Click to select a folder from your computer";
+              window.selectedBranchFiles = [];
+              input.value = '';
+              return;
+            }
+          }
+
+          window.selectedBranchFiles = mdFiles;
+          const rootFolderName = mdFiles[0].webkitRelativePath.split('/')[0];
+          document.getElementById('upload-box-text').innerHTML = `Selected <strong class="text-white">${mdFiles.length}</strong> markdown files from folder: <strong class="text-[#8ecae6]">${rootFolderName}</strong>`;
+        };
+
+        window.submitNewBranch = async () => {
+          const parent = document.getElementById('new-branch-parent').value;
+          const commitMessage = document.getElementById('new-branch-commit').value.trim();
+          const prDescription = document.getElementById('new-branch-pr-desc').value.trim();
+          const statusEl = document.getElementById('new-branch-status');
+
+          if (!window.selectedBranchFiles || window.selectedBranchFiles.length === 0) {
+            statusEl.innerText = 'Please select a local folder to upload.';
+            statusEl.className = 'text-sm text-rose-300';
+            return;
+          }
+
+          statusEl.innerText = 'Reading folder files...';
+          statusEl.className = 'text-sm text-slate-400';
+
+          try {
+            const nickname = window.auth?.user?.login || 'anonymous';
+            const authorLine = `author: ${nickname}`;
+            const fileReadPromises = window.selectedBranchFiles.map(file => {
+              return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                  let repoPath = file.webkitRelativePath;
+                  if (parent !== 'root') {
+                    repoPath = `${parent}/${file.webkitRelativePath}`;
+                  }
+
+                  let processedContent = e.target.result;
+                  const fmMatch = processedContent.match(/^---([\s\S]*?)---/);
+                  if (fmMatch) {
+                    const innerFm = fmMatch[1];
+                    if (!innerFm.includes('author:')) {
+                      processedContent = processedContent.replace(/^---/, `---\n${authorLine}`);
+                    }
+                  } else {
+                    processedContent = `---\n${authorLine}\n---\n${processedContent}`;
+                  }
+
+                  resolve({ path: repoPath, content: processedContent });
+                };
+                reader.onerror = () => reject(new Error(`Failed to read file ${file.name}`));
+                reader.readAsText(file);
+              });
+            });
+
+            const filesPayload = await Promise.all(fileReadPromises);
+
+            const rootFolderName = window.selectedBranchFiles[0].webkitRelativePath.split('/')[0];
+
+            const tempPrNumber = 'temp-' + Date.now();
+            const tempPR = {
+              isPr: true,
+              type: 'branch',
+              title: rootFolderName,
+              url: '#',
+              status: 'WAITING FOR APPROVAL',
+              prNumber: tempPrNumber,
+              fileId: parent === 'root' ? rootFolderName : `${parent}/${rootFolderName}`,
+              author: nickname,
+              incognito: false
+            };
+
+            try {
+              const localPRs = JSON.parse(sessionStorage.getItem('gaiabasin_local_prs') || '[]');
+              localPRs.push(tempPR);
+              sessionStorage.setItem('gaiabasin_local_prs', JSON.stringify(localPRs));
+              if (!window.userContributions) window.userContributions = [];
+              window.userContributions.push(tempPR);
+            } catch (e) {}
+
+            statusEl.innerText = 'Submitting pull request to GitHub...';
+
+            const response = await fetch('/api/contribute', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ files: filesPayload, commitMessage: `Add Branch: ${rootFolderName} - ${commitMessage}`, prDescription })
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Submission failed');
+
+            try {
+              const localPRs = JSON.parse(sessionStorage.getItem('gaiabasin_local_prs') || '[]');
+              const idx = localPRs.findIndex(p => p.prNumber === tempPrNumber);
+              if (idx !== -1) {
+                localPRs[idx].url = result.prUrl;
+                localPRs[idx].prNumber = result.prNumber;
+              }
+              sessionStorage.setItem('gaiabasin_local_prs', JSON.stringify(localPRs));
+              if (window.userContributions) {
+                const mIdx = window.userContributions.findIndex(p => p.prNumber === tempPrNumber);
+                if (mIdx !== -1) {
+                  window.userContributions[mIdx].url = result.prUrl;
+                  window.userContributions[mIdx].prNumber = result.prNumber;
+                }
+              }
+            } catch (e) {}
+
+            statusEl.innerHTML = `PR Created! <a href="${result.prUrl}" target="_blank" class="text-blue-400 underline font-semibold">View PR</a>`;
+            statusEl.className = 'text-sm text-[#8ecae6]';
+
+            setTimeout(() => {
+              window.closeAddBranchModal();
+            }, 5000);
+
+          } catch (err) {
+            try {
+              const localPRs = JSON.parse(sessionStorage.getItem('gaiabasin_local_prs') || '[]');
+              const filtered = localPRs.filter(p => p.prNumber !== tempPrNumber);
+              sessionStorage.setItem('gaiabasin_local_prs', JSON.stringify(filtered));
+              if (window.userContributions) {
+                window.userContributions = window.userContributions.filter(p => p.prNumber !== tempPrNumber);
+              }
+            } catch (e) {}
+            statusEl.innerText = err.message || 'Error proposing branch.';
+            statusEl.className = 'text-sm text-rose-300';
+          }
+        };
+
+        window.downloadFolder = async (folderId, folderLabel) => {
+          const targetFolder = window.findFolderNode(folderId);
+          if (!targetFolder) {
+            alert("Folder not found.");
+            return;
+          }
+
+          const filesToDownload = [];
+          const collectFiles = (folder) => {
+            // Strictly check and ensure only .md files are processed
+            folder.files.forEach(f => {
+              if (f.id.toLowerCase().endsWith('.md')) {
+                filesToDownload.push(f);
+              }
+            });
+            folder.children.forEach(c => collectFiles(c));
+          };
+          collectFiles(targetFolder);
+
+          if (filesToDownload.length === 0) {
+            alert("No markdown (.md) files found in this folder.");
+            return;
+          }
+
+          // Check if browser supports File System Access API
+          const supportsFileSystemAccess = 'showDirectoryPicker' in window;
+
+          if (supportsFileSystemAccess) {
+            try {
+              // Prompt user to select directory
+              const parentDirHandle = await window.showDirectoryPicker({
+                mode: 'readwrite'
+              });
+
+              // Create dynamic status toast
+              const toast = document.createElement('div');
+              toast.className = 'fixed bottom-6 right-6 z-[200] bg-[#051a33] border border-[#1b3e63] rounded-2xl px-6 py-4 shadow-2xl flex items-center gap-3 text-sm text-slate-200 transition-opacity duration-300';
+              toast.innerHTML = `
+                <svg class="animate-spin h-5 w-5 text-[#8ecae6]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <span>Writing folder <strong class="text-white">${folderLabel}</strong> to disk...</span>
+              `;
+              document.body.appendChild(toast);
+
+              const getOrCreateDirHandle = async (parentHandle, pathSegments) => {
+                let currentHandle = parentHandle;
+                for (const segment of pathSegments) {
+                  currentHandle = await currentHandle.getDirectoryHandle(segment, { create: true });
+                }
+                return currentHandle;
+              };
+
+              // Fetch and write each file natively
+              for (const file of filesToDownload) {
+                const encodedPath = file.id.split('/').map(encodeURIComponent).join('/');
+                const resp = await fetch(`/api/fileContent?path=${encodedPath}`);
+                if (!resp.ok) throw new Error(`HTTP error ${resp.status} on ${file.id}`);
+                const text = await resp.text();
+
+                // Get relative path inside the target folder structure
+                let relativePath = file.id;
+                if (folderId !== 'root' && file.id.startsWith(folderId + '/')) {
+                  relativePath = file.id.slice(folderId.length + 1);
+                }
+
+                const segments = relativePath.split('/');
+                const fileName = segments.pop();
+
+                // Create intermediate folders if they don't exist
+                const targetDirHandle = await getOrCreateDirHandle(parentDirHandle, segments);
+
+                // Write file to native filesystem
+                const fileHandle = await targetDirHandle.getFileHandle(fileName, { create: true });
+                const writable = await fileHandle.createWritable();
+                await writable.write(text);
+                await writable.close();
+              }
+
+              toast.innerHTML = `
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Folder saved successfully!</span>
+              `;
+              setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+              }, 2500);
+
+            } catch (err) {
+              console.error('Folder download failed:', err);
+              if (err.name !== 'AbortError') {
+                alert("Failed to write folder: " + err.message);
+              }
+            }
+          } else {
+            // Fallback to ZIP download
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-6 right-6 z-[200] bg-[#051a33] border border-[#1b3e63] rounded-2xl px-6 py-4 shadow-2xl flex items-center gap-3 text-sm text-slate-200 transition-opacity duration-300';
+            toast.innerHTML = `
+              <svg class="animate-spin h-5 w-5 text-[#8ecae6]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              <span>Preparing ZIP fallback download for <strong class="text-white">${folderLabel}</strong>...</span>
+            `;
+            document.body.appendChild(toast);
+
+            try {
+              const zip = new JSZip();
+
+              const promises = filesToDownload.map(async (file) => {
+                const encodedPath = file.id.split('/').map(encodeURIComponent).join('/');
+                const resp = await fetch(`/api/fileContent?path=${encodedPath}`);
+                if (!resp.ok) throw new Error(`HTTP error ${resp.status} on ${file.id}`);
+                const text = await resp.text();
+
+                let zipPath = file.id;
+                if (folderId !== 'root' && file.id.startsWith(folderId + '/')) {
+                  zipPath = file.id.slice(folderId.length + 1);
+                }
+                zip.file(zipPath, text);
+              });
+
+              await Promise.all(promises);
+
+              toast.querySelector('span').innerText = 'Generating ZIP archive...';
+              const zipBlob = await zip.generateAsync({ type: 'blob' });
+
+              const link = document.createElement('a');
+              link.href = URL.createObjectURL(zipBlob);
+              link.download = `${folderLabel}.zip`;
+              link.click();
+
+              toast.innerHTML = `
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Download complete!</span>
+              `;
+              setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+              }, 2500);
+
+            } catch (err) {
+              console.error('Folder ZIP download failed:', err);
+              toast.innerHTML = `
+                <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <span>Failed to download folder ZIP: ${err.message}</span>
+              `;
+              setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+              }, 4000);
+            }
+          }
+        };
+
+        window.downloadActiveFolder = () => {
+          let selectedFolderId = 'root';
+          let selectedFolderLabel = 'Vault';
+          if (window.graphNetwork) {
+            const selected = window.graphNetwork.getSelectedNodes();
+            if (selected.length > 0) {
+              const nodeId = selected[0];
+              const node = processedNodes.find(n => n.id === nodeId);
+              if (node && node.isFolder) {
+                selectedFolderId = node.id;
+                selectedFolderLabel = node.label;
+              } else {
+                alert("Please select a folder node in the graph, or click directly on the sidebar folder download icons.");
+                return;
+              }
+            }
+          }
+          window.downloadFolder(selectedFolderId, selectedFolderLabel);
+        };
+
+        window.downloadSelectedBranchFolder = () => {
+          const select = document.getElementById('new-branch-parent');
+          if (!select) return;
+          const folderId = select.value;
+          const folderLabel = select.options[select.selectedIndex].text.split(' (')[0];
+          window.downloadFolder(folderId, folderLabel);
+        };
+
         window.createMainGraph(null, null, null); // initial load
         window.populateVaultTree();
         window.fetchSession();
@@ -1829,6 +2738,12 @@ try {
             `;
           }).join('');
         });
+
+        // Attach mutual exclusion input listeners
+        const titleInputNode = document.getElementById('new-node-title');
+        const contentTextareaNode = document.getElementById('new-node-content');
+        if (titleInputNode) titleInputNode.addEventListener('input', window.updateUploadButtonState);
+        if (contentTextareaNode) contentTextareaNode.addEventListener('input', window.updateUploadButtonState);
       });
     </script>
   </body>
