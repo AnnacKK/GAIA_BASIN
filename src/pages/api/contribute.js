@@ -90,6 +90,7 @@ export const POST = async ({ request }) => {
 Proposed by @${contributor}.
 
 file: \`${path || (files && files[0] ? files[0].path : 'multiple files')}\`
+folderRoot: \`${files && files[0] ? files[0].path.split('/').slice(0, -1).join('/') : ''}\`
 
 This contribution proposes changes to files inside the vault branch.`,
       head: `${forkOwner}:${branchName}`,
