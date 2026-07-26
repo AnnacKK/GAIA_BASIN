@@ -1,0 +1,27 @@
+<div id="editor-modal" class="hidden fixed inset-0 z-60 bg-black/80 p-6 flex items-center justify-center">
+      <div class="mx-auto w-full max-w-4xl rounded-[32px] border border-[#1e314e] bg-[#061525] shadow-2xl flex flex-col max-h-[90vh]">
+        <div class="flex flex-col gap-4 border-b border-[#17324b] px-6 py-5 md:flex-row md:items-center md:justify-between shrink-0">
+          <div>
+            <p id="editor-title" class="text-2xl font-semibold text-white">Propose contribution</p>
+            <p class="mt-1 text-sm text-slate-400" id="editor-subtitle">Edit this note and submit as a pull request.</p>
+          </div>
+        </div>
+        <div class="space-y-4 px-6 py-5 overflow-y-auto flex-1 custom-scrollbar">
+          <label class="block text-sm font-medium text-slate-300">File path</label>
+          <input id="editor-path" type="text" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="books/new-book.md" />
+          <label class="block text-sm font-medium text-slate-300">Commit message</label>
+          <input id="editor-commit" type="text" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="Propose an update or new note" />
+          <label class="block text-sm font-medium text-slate-300">Pull request description</label>
+          <textarea id="editor-pr-body" rows="4" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="Describe the proposed changes and any context."></textarea>
+          <label class="block text-sm font-medium text-slate-300">Markdown content</label>
+          <textarea id="editor-content" rows="14" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 font-mono text-sm focus:border-[#5c7aff] outline-none"></textarea>
+        </div>
+        <div class="px-6 py-4 border-t border-[#17324b] shrink-0 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-[#061525] rounded-b-[32px]">
+          <p id="editor-status" class="text-sm text-slate-400"></p>
+          <div class="flex items-center gap-3">
+            <button onclick="window.submitContribution()" class="rounded-3xl bg-[#1a4f7f] px-5 py-2 text-base font-semibold text-[#d5e9ff] hover:bg-[#2b74b0]">Submit contribution</button>
+            <button onclick="window.closeEditor()" class="rounded-3xl border border-[#2b4d7b] bg-[#0d2a53] px-5 py-2 text-base font-semibold text-slate-100 hover:bg-[#1c4a82]">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>

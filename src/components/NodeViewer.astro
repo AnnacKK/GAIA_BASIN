@@ -1,0 +1,38 @@
+<div id="node-viewer" class="hidden fixed inset-0 z-50 bg-[#041728] overflow-hidden">
+  <div class="viewer-shell w-full h-full flex flex-col overflow-hidden">
+    <div class="flex flex-col gap-4 border-b border-[#10243e] px-8 py-5 md:flex-row md:items-center md:justify-between shrink-0">
+      <div>
+        <button id="reader-close-button" onclick="window.closeNodeViewer()" class="mb-3 inline-flex items-center gap-2 rounded-full border border-[#1b3e63] bg-[#07172d] px-4 py-2 text-sm text-slate-200 hover:bg-[#0b2c52]">
+          ← Vault
+        </button>
+        <p id="reader-title" class="text-2xl font-semibold text-white">Select a note</p>
+        <p id="reader-path" class="mt-1 text-sm text-slate-400"></p>
+      </div>
+      <div id="contrib-controls" class="flex flex-wrap gap-2"></div>
+    </div>
+    <div class="grid gap-6 p-8 flex-1 min-h-0 lg:grid-cols-[240px_1fr_280px] overflow-hidden">
+      <aside class="rounded-[32px] border border-[#10243e] bg-[#051b31] p-5 text-sm text-slate-200 overflow-auto custom-scrollbar">
+        <div class="grid grid-cols-1 gap-2">
+          <button onclick="window.handleTab('overview')" class="nav-btn">Overview</button>
+          <button onclick="window.handleTab('books')" class="nav-btn">Books</button>
+          <button onclick="window.handleTab('articles')" class="nav-btn">Articles</button>
+          <button onclick="window.handleTab('courses')" class="nav-btn">Courses</button>
+          <button onclick="window.handleTab('credits')" class="nav-btn">Credits</button>
+        </div>
+      </aside>
+
+      <article id="reader-body" class="prose prose-invert overflow-auto rounded-[32px] border border-[#10243e] bg-[#041826] p-6 text-slate-100 custom-scrollbar"></article>
+
+      <aside class="rounded-[32px] border border-[#10243e] bg-[#051b31] p-5 text-sm text-slate-200 flex flex-col min-h-0 max-h-full">
+        <p class="text-xs uppercase tracking-[0.3em] text-[#7c98d9] mb-4 shrink-0">Interactive Graph</p>
+        <div id="mini-graph" class="h-48 shrink-0 rounded-[28px] border border-[#123153] bg-[#041826] mb-4"></div>
+
+        <div id="focus-info" class="hidden shrink-0"></div>
+        <ul id="closest-list" class="hidden shrink-0"></ul>
+
+        <div id="reader-sections" class="space-y-4 text-sm overflow-y-auto overflow-x-hidden flex-1 min-h-0 pr-3 pb-6 custom-scrollbar text-slate-300"></div>
+        
+      </aside>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,148 @@
+<div id="library-window" class="hidden fixed inset-0 z-50 bg-[#071621] overflow-auto flex flex-col">
+      <!-- LIBRARY LIST VIEW -->
+      <div id="library-list-view" class="flex-1 flex flex-col p-6 md:p-12">
+         <!-- Header -->
+         <div class="flex items-center justify-between mb-8 max-w-7xl mx-auto w-full">
+            <div class="flex items-center gap-4">
+               <button onclick="window.closeLibrary()" class="text-slate-400 hover:text-white transition-colors">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+               </button>
+               <h2 class="text-2xl font-bold text-white tracking-widest uppercase">Books Library</h2>
+            </div>
+            <!-- Search & Tags -->
+            <div class="flex items-center gap-4 w-full max-w-md">
+               <div class="relative flex-1">
+                  <input type="text" id="library-search-input" oninput="window.filterBooks()" class="w-full bg-[#05111d] border border-[#14325a] rounded-full px-5 py-2.5 text-slate-200 text-sm focus:border-[#2b74b0] outline-none" placeholder="SEARCH BOOKS..." />
+               </div>
+               <button id="btn-toggle-library-tags" onclick="window.toggleLibraryTags()" class="bg-[#0a2336] border border-[#1b3e63] px-5 py-2.5 rounded-full text-xs font-bold text-[#8ecae6] hover:bg-[#1a4f7f] hover:text-white transition-colors uppercase tracking-widest">Tags</button>
+               <button onclick="window.openAddBookModal()" class="bg-[#2b74b0] hover:bg-[#348bd2] px-6 py-2.5 rounded-full text-xs font-bold text-white transition-colors uppercase tracking-widest shrink-0">+ Add Book</button>
+            </div>
+         </div>
+
+         <!-- Tags Panel -->
+         <div id="library-tags-panel" class="hidden mb-6 max-w-7xl mx-auto w-full bg-[#05111d] border border-[#14325a] rounded-2xl p-5">
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Filter by tag:</p>
+            <div id="library-tags-container" class="flex flex-wrap gap-2">
+               <!-- Tags loaded dynamically -->
+            </div>
+         </div>
+
+         <!-- Grid of Books -->
+         <div class="flex-1 max-w-7xl mx-auto w-full">
+            <div id="library-books-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8">
+               <!-- Book cards rendered dynamically -->
+            </div>
+         </div>
+      </div>
+
+      <!-- BOOK DETAIL VIEW -->
+      <div id="library-detail-view" class="hidden flex-1 flex flex-col md:flex-row overflow-hidden">
+         <!-- Left Sidebar -->
+         <div class="md:w-72 border-r border-[#1e314e] bg-[#061525] p-6 flex flex-col gap-6 shrink-0 overflow-y-auto custom-scrollbar">
+            <button onclick="window.showLibraryListView()" class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-semibold mb-4">
+               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+               <span>Library</span>
+            </button>
+            
+            <div>
+               <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3" id="book-theme-header">Books &lt;THEME&gt;</p>
+               <div id="book-playlist-list" class="flex flex-col gap-1">
+                  <!-- Playlist of books in same theme -->
+               </div>
+            </div>
+
+            <div>
+               <div id="book-similar-list" class="space-y-3 mt-3">
+                  <!-- Similar books links -->
+               </div>
+            </div>
+
+            <div class="mt-auto pt-6 border-t border-[#1e314e]">
+               <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Credits</p>
+               <p id="book-detail-credits" class="text-xs text-slate-400 leading-relaxed"></p>
+            </div>
+         </div>
+
+         <!-- Main Reader view -->
+         <div class="flex-1 bg-[#071621] p-6 md:p-12 overflow-y-auto flex flex-col items-center justify-center">
+            <div class="max-w-xl w-full flex flex-col items-center text-center">
+               <!-- Title & Difficulty Level -->
+               <h3 id="book-detail-title" class="text-3xl font-black text-white leading-tight"></h3>
+               <div class="mt-3 flex flex-col items-center gap-3">
+                  <div class="flex flex-wrap items-center justify-center gap-2">
+                     <span id="book-detail-level" class="text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full border"></span>
+                     <span id="book-detail-theme" class="text-[10px] font-extrabold uppercase tracking-widest text-[#8ecae6] bg-[#0c2a53] border border-[#1b3e63] px-3 py-1 rounded-full"></span>
+                     <span id="book-detail-author" class="text-[10px] font-extrabold uppercase tracking-widest text-slate-300 bg-[#0d2a53]/40 border border-[#1e314e] px-3 py-1 rounded-full"></span>
+                  </div>
+                  <div id="book-detail-tags" class="flex flex-wrap items-center justify-center gap-1.5 mt-1">
+                     <!-- Tags list badges -->
+                  </div>
+               </div>
+               
+               <!-- Large Cover Image -->
+               <div class="my-8 relative group max-w-[280px] w-full aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border border-[#14325a] hover:border-[#2b74b0] hover:shadow-cyan-500/10 transition-all duration-500">
+                  <img id="book-detail-cover" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="" alt="Book Cover" />
+               </div>
+
+               <!-- Description -->
+               <p id="book-detail-desc" class="text-sm text-slate-400 max-w-md leading-relaxed mb-8"></p>
+
+               <!-- Actions -->
+               <div class="flex items-center gap-6 justify-center w-full">
+                  <a id="btn-book-download" href="" target="_blank" class="flex-1 max-w-[160px] bg-[#0a2336] border border-[#1b3e63] hover:bg-[#1a4f7f] hover:text-white px-6 py-3 rounded-full text-xs font-bold text-[#8ecae6] transition-colors text-center uppercase tracking-widest">Download</a>
+                  <a id="btn-book-read" href="" target="_blank" class="flex-1 max-w-[160px] bg-[#1a4f7f] hover:bg-[#2b74b0] text-white px-6 py-3 rounded-full text-xs font-bold transition-colors text-center uppercase tracking-widest">Read</a>
+               </div>
+            </div>
+         </div>
+      </div>
+    </div>
+
+        <div id="add-book-modal" class="hidden fixed inset-0 z-[110] bg-black/80 p-6 flex items-center justify-center">
+      <div class="mx-auto w-full max-w-xl rounded-[32px] border border-[#1e314e] bg-[#061525] shadow-2xl flex flex-col max-h-[90vh]">
+        <div class="flex flex-col gap-4 border-b border-[#17324b] px-6 py-5 md:flex-row md:items-center md:justify-between shrink-0">
+          <div>
+            <p class="text-2xl font-semibold text-white">Add Book to Library</p>
+            <p class="mt-1 text-sm text-slate-400">Upload a PDF book directly to the Hugging Face bucket.</p>
+          </div>
+        </div>
+        <form id="add-book-form" onsubmit="window.submitBookForm(event)" class="space-y-5 px-6 py-5 overflow-y-auto flex-1 custom-scrollbar">
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">Book File (PDF)</label>
+            <input type="file" id="book-file-input" accept="application/pdf" required class="w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#0d2a53] file:text-sky-200 hover:file:bg-[#1c4a82] file:cursor-pointer" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">Book Title</label>
+            <input id="book-title-input" type="text" required class="w-full rounded-2xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="A More Just Future" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">Description</label>
+            <textarea id="book-desc-input" rows="2" class="w-full rounded-2xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="Enter book summary..."></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+             <div>
+               <label class="block text-sm font-medium text-slate-300 mb-1.5">Theme / Category</label>
+               <input id="book-theme-input" type="text" required class="w-full rounded-2xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="Programming" />
+             </div>
+             <div>
+               <label class="block text-sm font-medium text-slate-300 mb-1.5">Difficulty Level</label>
+               <select id="book-level-select" class="w-full rounded-2xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none appearance-none cursor-pointer">
+                 <option value="Easy">Easy</option>
+                 <option value="Medium" selected>Medium</option>
+                 <option value="Hard">Hard</option>
+               </select>
+             </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">Tags (comma-separated)</label>
+            <input id="book-tags-input" type="text" class="w-full rounded-2xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="statistics, tutorial, oop" />
+          </div>
+        </form>
+        <div class="px-6 py-4 border-t border-[#17324b] shrink-0 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-[#061525] rounded-b-[32px]">
+          <p id="book-submit-status" class="text-sm text-slate-400"></p>
+          <div class="flex items-center gap-3">
+            <button type="submit" form="add-book-form" id="btn-submit-book" class="bg-[#1a4f7f] px-5 py-2 text-base rounded-full font-semibold text-[#d5e9ff] hover:bg-[#2b74b0] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Add Book</button>
+            <button onclick="window.closeAddBookModal()" class="rounded-full border border-[#2b4d7b] bg-[#0d2a53] px-5 py-2 text-base font-semibold text-slate-100 hover:bg-[#1c4a82]">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>

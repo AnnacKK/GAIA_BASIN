@@ -1,0 +1,35 @@
+<div id="export-modal" class="hidden fixed inset-0 z-60 bg-black/80 p-6 flex items-center justify-center">
+      <div class="mx-auto w-full max-w-xl rounded-[32px] border border-[#1e314e] bg-[#061525] shadow-2xl flex flex-col max-h-[90vh]">
+        <div class="flex flex-col gap-4 border-b border-[#17324b] px-6 py-5 md:flex-row md:items-center md:justify-between shrink-0">
+          <div>
+            <p class="text-2xl font-semibold text-white">Export Graph</p>
+            <p class="mt-1 text-sm text-slate-400">Download the entire repository to your local computer.</p>
+          </div>
+        </div>
+        <div class="space-y-4 px-6 py-5 overflow-y-auto flex-1 custom-scrollbar">
+          <div class="bg-[#05111d] rounded-2xl p-4 border border-[#14325a] mb-2">
+            <h4 class="text-sm font-semibold text-[#8ecae6] uppercase tracking-wider mb-2">How to Export</h4>
+            <ol class="list-decimal list-inside text-xs text-slate-300 space-y-1.5">
+              <li>Enter the path to a folder on your computer where you want to save the graph (optional).</li>
+              <li>Click the copy button on the generated command below.</li>
+              <li>Open your computer's terminal (Command Prompt, PowerShell, or Terminal).</li>
+              <li>Paste the command and press <kbd class="bg-[#1e314e] text-slate-100 px-1 py-0.5 rounded text-[10px]">Enter</kbd> to download.</li>
+            </ol>
+          </div>
+
+          <label class="block text-sm font-medium text-slate-300">Local Folder Path (Optional)</label>
+          <input id="export-path" type="text" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="C:\Users\MyName\Documents\Graphs" oninput="window.updateExportCommand()" />
+          
+          <label class="block text-sm font-medium text-slate-300 mt-4">Command to Run in Terminal</label>
+          <div class="relative">
+            <textarea id="export-command" rows="2" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#030d17] px-4 py-3 text-slate-100 font-mono text-sm outline-none resize-none" readonly></textarea>
+            <button id="copy-export-btn" onclick="window.copyExportCommand()" class="absolute right-3 top-3 bg-[#0d2a53] text-slate-300 p-1.5 rounded-lg border border-[#2b4d7b] hover:text-white hover:bg-[#1c4a82] transition-colors" title="Copy Command">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            </button>
+          </div>
+        </div>
+        <div class="px-6 py-4 border-t border-[#17324b] shrink-0 flex justify-end bg-[#061525] rounded-b-[32px]">
+          <button onclick="window.closeExportModal()" class="rounded-3xl border border-[#2b4d7b] bg-[#0d2a53] px-5 py-2 text-base font-semibold text-slate-100 hover:bg-[#1c4a82]">Close</button>
+        </div>
+      </div>
+    </div>

@@ -1,0 +1,39 @@
+<div id="resource-modal" class="hidden fixed inset-0 z-60 bg-black/80 p-6 flex items-center justify-center">
+      <div class="mx-auto w-full max-w-2xl rounded-[32px] border border-[#1e314e] bg-[#061525] shadow-2xl flex flex-col max-h-[90vh]">
+        <div class="flex flex-col gap-4 border-b border-[#17324b] px-6 py-5 md:flex-row md:items-center md:justify-between shrink-0">
+          <div>
+            <p class="text-2xl font-semibold text-white">Add resource</p>
+            <p class="mt-1 text-sm text-slate-400">Add a book, course, or article to this note.</p>
+          </div>
+        </div>
+        <div class="space-y-4 px-6 py-5 overflow-y-auto flex-1 custom-scrollbar">
+          <label class="block text-sm font-medium text-slate-300">Resource type</label>
+          <select id="resource-type" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none appearance-none">
+            <option value="article">Article</option>
+            <option value="book">Book</option>
+            <option value="course">Course</option>
+          </select>
+          <div id="library-contribution-callout" class="hidden bg-[#0d2a53]/60 border border-[#1e314e] rounded-3xl p-5 flex flex-col gap-3 shadow-inner">
+             <div class="flex items-start gap-3">
+                <div class="text-[#8ecae6] text-xl">📚</div>
+                <div>
+                   <p class="text-sm font-bold text-white">Want to contribute to the library?</p>
+                   <p class="text-xs text-slate-400 mt-1 leading-relaxed">Instead of a link, you can upload PDF books directly to our global digital library repository.</p>
+                </div>
+             </div>
+             <button type="button" onclick="window.redirectToLibraryUpload()" class="self-end rounded-full bg-[#1b3e63] hover:bg-[#2b5d8f] px-4 py-2 text-xs font-bold text-[#8ecae6] hover:text-white transition-colors uppercase tracking-wider">Upload Book File</button>
+          </div>
+          <label class="block text-sm font-medium text-slate-300">Title</label>
+          <input id="resource-title" type="text" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="Command Pattern Deep Dive" />
+          <label class="block text-sm font-medium text-slate-300">URL</label>
+          <input id="resource-url" type="url" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="https://example.com/article" />
+        </div>
+        <div class="px-6 py-4 border-t border-[#17324b] shrink-0 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-[#061525] rounded-b-[32px]">
+          <p id="resource-status" class="text-sm text-slate-400"></p>
+          <div class="flex items-center gap-3">
+            <button onclick="window.submitResource()" class="rounded-3xl bg-[#1a4f7f] px-5 py-2 text-base font-semibold text-[#d5e9ff] hover:bg-[#2b74b0]">Submit resource</button>
+            <button onclick="window.closeResourceAdder()" class="rounded-3xl border border-[#2b4d7b] bg-[#0d2a53] px-5 py-2 text-base font-semibold text-slate-100 hover:bg-[#1c4a82]">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>

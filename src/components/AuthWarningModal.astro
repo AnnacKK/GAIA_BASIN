@@ -1,0 +1,10 @@
+<div id="auth-warning-modal" class="hidden fixed inset-0 z-[120] bg-black/80 flex items-center justify-center p-6">
+  <div class="mx-auto w-full max-w-sm rounded-[24px] border border-[#1e314e] bg-[#0b1d33] p-8 shadow-2xl relative text-left">
+    <h3 class="text-xl font-bold text-white mb-2">Authentication Required</h3>
+    <p class="text-slate-400 text-sm mb-6">Only logged in users can add resources.</p>
+    <div class="flex items-center justify-end gap-4">
+      <a href="/api/auth/login" class="bg-[#1a4f7f] hover:bg-[#2b74b0] text-white px-5 py-2.5 rounded-2xl text-sm font-semibold transition-colors shadow-lg">Log In</a>
+      <button onclick="document.getElementById('auth-warning-modal').classList.add('hidden')" class="px-4 py-2.5 text-sm font-semibold text-slate-300 hover:text-white transition-colors">Close</button>
+    </div>
+  </div>
+</div>

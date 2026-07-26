@@ -11,13 +11,13 @@ export const GET = async ({ request }) => {
     const info = await getFileInfo(MASTER_TOKEN, REPO_USER, path);
     if (!info || !info.content) throw new Error("File not found");
     const content = Buffer.from(info.content, 'base64').toString('utf8');
-    return new Response(content, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/plain',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-      }
-    });
+        return new Response(content, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/plain',
+            'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+          }
+        });
   } catch (err) {
     return new Response(err.message, { status: 500 });
   }

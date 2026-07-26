@@ -1,0 +1,43 @@
+<div id="add-node-modal" class="hidden fixed inset-0 z-60 bg-black/80 p-6 flex items-center justify-center">
+      <div class="mx-auto w-full max-w-2xl rounded-[32px] border border-[#1e314e] bg-[#061525] shadow-2xl flex flex-col max-h-[90vh]">
+        <div class="flex flex-col gap-4 border-b border-[#17324b] px-6 py-5 md:flex-row md:items-center md:justify-between shrink-0">
+          <div>
+            <p class="text-2xl font-semibold text-white">Add Node (Propose Note)</p>
+            <p class="mt-1 text-sm text-slate-400">Add a new markdown note to an existing folder via Pull Request.</p>
+          </div>
+        </div>
+        <div class="space-y-4 px-6 py-5 overflow-y-auto flex-1 custom-scrollbar">
+          <label class="block text-sm font-medium text-slate-300">Select Folder</label>
+          <select id="new-node-folder" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none appearance-none"></select>
+          
+          <label class="block text-sm font-medium text-slate-300">Pull Request Description</label>
+          <textarea id="new-node-pr-desc" rows="2" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="Provide context about this new note..."></textarea>
+
+          <label class="block text-sm font-medium text-slate-300">Commit Message</label>
+          <input id="new-node-commit" type="text" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="Add new note" />
+
+          <label class="block text-sm font-medium text-slate-300">Note Title</label>
+          <input id="new-node-title" type="text" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="e.g. Singleton Pattern" />
+
+          <div class="flex justify-between items-center">
+            <label class="block text-sm font-medium text-slate-300">Markdown Content</label>
+            <div id="new-node-upload-status" class="flex items-center gap-2">
+              <span id="new-node-upload-or-text" class="text-xs text-slate-500 font-semibold uppercase tracking-wider transition-opacity duration-200">or</span>
+              <button id="new-node-upload-btn" onclick="window.handleNodeUploadClick()" type="button" class="text-xs font-semibold text-[#8ecae6] hover:text-white transition-colors bg-white/5 border border-white/10 rounded-full px-3.5 py-1.5 cursor-pointer flex items-center gap-1.5 transition-all duration-200">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Upload File (.md)
+              </button>
+              <input type="file" id="new-node-file-upload" accept=".md" class="hidden" onchange="window.handleNodeFileUpload(this)" />
+            </div>
+          </div>
+          <textarea id="new-node-content" rows="8" class="w-full rounded-3xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 font-mono text-sm focus:border-[#5c7aff] outline-none" placeholder="# Note Title&#10;&#10;Write content here...&#10;&#10;- type: article&#10;  title: &quot;Command Pattern Deep Dive&quot;&#10;  url: &quot;https://refactoring.guru/design-patterns/command&quot;"></textarea>
+        </div>
+        <div class="px-6 py-4 border-t border-[#17324b] shrink-0 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-[#061525] rounded-b-[32px]">
+          <p id="new-node-status" class="text-sm text-slate-400"></p>
+          <div class="flex items-center gap-3">
+            <button onclick="window.submitNewNode()" class="rounded-3xl bg-[#1a4f7f] px-5 py-2 text-base font-semibold text-[#d5e9ff] hover:bg-[#2b74b0]">Submit Proposol</button>
+            <button onclick="window.closeAddNodeModal()" class="rounded-3xl border border-[#2b4d7b] bg-[#0d2a53] px-5 py-2 text-base font-semibold text-slate-100 hover:bg-[#1c4a82]">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>

@@ -1,0 +1,33 @@
+<div id="account-modal" class="hidden fixed inset-0 z-60 bg-[#071621] overflow-auto flex flex-col">
+      <div class="flex items-center justify-between border-b border-[#1e314e] bg-[#061525] px-6 py-2.5 shrink-0">
+        <div class="flex items-center gap-4" id="account-header-info">
+          <!-- Filled by JS -->
+        </div>
+        <button onclick="window.closeAccountModal()" class="rounded-2xl border border-[#2b4d7b] bg-[#0d2a53] px-4 py-2 text-base text-slate-100 hover:bg-[#1c4a82]">Close Dashboard</button>
+      </div>
+      <div class="flex flex-1 overflow-hidden flex-col md:flex-row">
+        <div class="md:w-64 border-r border-[#1e314e] bg-[#061525] p-4 flex flex-col gap-1.5 shrink-0 overflow-y-auto custom-scrollbar">
+          <p class="text-lg font-bold text-slate-500 uppercase tracking-widest mb-2 px-2">Resources</p>
+          <button onclick="window.setAccountTab('all')" id="acc-tab-all" class="text-left px-4 py-2 rounded-xl bg-[#1a4f7f] text-white font-medium text-base">All Added</button>
+          <button onclick="window.setAccountTab('book')" id="acc-tab-book" class="text-left px-4 py-2 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200 text-base">Added Books</button>
+          <button onclick="window.setAccountTab('article')" id="acc-tab-article" class="text-left px-4 py-2 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200 text-base">Added Articles</button>
+          <button onclick="window.setAccountTab('course')" id="acc-tab-course" class="text-left px-4 py-2 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200 text-base">Added Courses</button>
+          <button onclick="window.setAccountTab('note')" id="acc-tab-note" class="text-left px-4 py-2 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200 text-base">Added Notes</button>
+          <button onclick="window.setAccountTab('edited_note')" id="acc-tab-edited_note" class="text-left px-4 py-2 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200 text-base">Edited Notes</button>
+          <button onclick="window.setAccountTab('branch')" id="acc-tab-branch" class="text-left px-4 py-2 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200 text-base">Added Branches</button>
+          <button onclick="window.setAccountTab('research')" id="acc-tab-research" class="text-left px-4 py-2 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200 transition-colors text-base">Added Researches</button>
+          <button onclick="window.setAccountTab('moderate')" id="acc-tab-moderate" class="hidden text-left px-4 py-2 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200 transition-colors text-base">Moderate Books</button>
+          <div class="flex-1 hidden md:block"></div>
+          <p class="text-lg font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-2 md:mt-0">Account</p>
+          <button onclick="window.setAccountTab('statistics')" id="acc-tab-statistics" class="text-left px-4 py-2 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200 text-base">Statistics</button>
+          <button onclick="window.setAccountTab('settings')" id="acc-tab-settings" class="text-left px-4 py-2 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200 text-base">Settings</button>
+        </div>
+        <div class="flex-1 p-6 md:p-10 overflow-y-auto custom-scrollbar bg-[#071621]" id="account-content-area">
+          <ul id="account-resources-list" class="space-y-2.5 max-w-4xl mx-auto">
+            <!-- Filled by JS -->
+          </ul>
+          <div id="account-statistics" class="hidden max-w-4xl mx-auto"></div>
+          <div id="account-settings" class="hidden max-w-4xl mx-auto"></div>
+        </div>
+      </div>
+    </div>

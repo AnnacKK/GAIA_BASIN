@@ -54,7 +54,10 @@ export const GET = async () => {
 
      return new Response(JSON.stringify(researches), {
         status: 200,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+           'Content-Type': 'application/json',
+           'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=59'
+        }
      });
 
   } catch (error) {

@@ -57,9 +57,9 @@ async function fetchBookDetails(title) {
    
    if (!coverImage) {
       const covers = [
-         'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=600&auto=format&fit=crop',
-         'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=600&auto=format&fit=crop',
-         'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=600&auto=format&fit=crop'
+         'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=300&auto=format&fit=crop',
+         'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=300&auto=format&fit=crop',
+         'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=300&auto=format&fit=crop'
       ];
       coverImage = covers[Math.floor(Math.random() * covers.length)];
    }
@@ -191,7 +191,10 @@ export const GET = async () => {
 
      return new Response(JSON.stringify(books), {
         status: 200,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+           'Content-Type': 'application/json',
+           'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=59'
+        }
      });
 
   } catch (error) {

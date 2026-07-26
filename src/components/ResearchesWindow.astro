@@ -1,0 +1,59 @@
+<div id="researches-window" class="hidden fixed inset-0 z-[100] bg-[#031226] flex flex-col h-screen overflow-hidden">
+      <div class="flex items-center justify-between px-10 py-6 border-b border-[#0f1f42] bg-[#04112b]">
+        <div>
+          <h2 class="text-3xl font-bold text-white tracking-wide">Useful Researches</h2>
+          <p class="text-slate-400 mt-2 text-sm">A curated collection of external resources, papers, and articles.</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <button onclick="window.openAddResearchModal()" class="flex items-center gap-2 bg-[#1a4f7f] hover:bg-[#2b74b0] text-white px-5 py-2.5 rounded-full text-sm font-semibold transition-colors shadow-lg">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Add Research
+          </button>
+          <button onclick="window.closeResearchesWindow()" class="p-2 rounded-full bg-[#0a1e3f] text-slate-300 hover:text-white border border-[#14325a] hover:bg-[#12315e] transition-colors" title="Close Window">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Navigation Tabs -->
+      <div class="flex items-center gap-2 px-10 py-4 border-b border-[#0f1f42] bg-[#04112b] overflow-x-auto shrink-0">
+        <button onclick="window.switchResearchTab('all')" id="tab-all" class="px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 bg-[#1a4f7f] text-white">All</button>
+        <button onclick="window.switchResearchTab('roadmaps')" id="tab-roadmaps" class="px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 text-slate-400 hover:text-slate-200 hover:bg-[#0a1e3f]">Roadmaps</button>
+        <button onclick="window.switchResearchTab('leetcode')" id="tab-leetcode" class="px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 text-slate-400 hover:text-slate-200 hover:bg-[#0a1e3f]">LeetCode Style</button>
+        <button onclick="window.switchResearchTab('blogs')" id="tab-blogs" class="px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 text-slate-400 hover:text-slate-200 hover:bg-[#0a1e3f]">Best Blog Selections</button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-10 custom-scrollbar">
+        <div id="researches-container" class="max-w-7xl mx-auto space-y-12">
+          <!-- Roadmaps Section -->
+          <div id="section-roadmaps-container">
+            <h3 id="header-roadmaps" class="text-xl font-bold text-[#8ecae6] mb-6 pb-2 border-b border-[#14325a]">Roadmaps</h3>
+            <div id="section-roadmaps" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div class="col-span-full text-slate-500 text-sm py-4 italic">No roadmaps added yet.</div>
+            </div>
+          </div>
+          
+          <!-- LeetCode Style Section -->
+          <div id="section-leetcode-container">
+            <h3 id="header-leetcode" class="text-xl font-bold text-[#8ecae6] mb-6 pb-2 border-b border-[#14325a]">LeetCode Style</h3>
+            <div id="section-leetcode" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div class="col-span-full text-slate-500 text-sm py-4 italic">No resources added yet.</div>
+            </div>
+          </div>
+
+          <!-- Best Blog Selections Section -->
+          <div id="section-blogs-container">
+            <h3 id="header-blogs" class="text-xl font-bold text-[#8ecae6] mb-6 pb-2 border-b border-[#14325a]">Best Blog Selections</h3>
+            <div id="section-blogs" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div class="col-span-full text-slate-500 text-sm py-4 italic">No blog posts added yet.</div>
+            </div>
+          </div>
+
+          <!-- Others Section -->
+          <div id="section-others-container" class="hidden">
+            <h3 id="header-others" class="text-xl font-bold text-[#8ecae6] mb-6 pb-2 border-b border-[#14325a]">Others</h3>
+            <div id="section-others" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
