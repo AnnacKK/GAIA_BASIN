@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@astrojs/node": "^11.0.2",
+    "@aws-sdk/client-s3": "^3.1095.0",
+    "@libsql/client": "^0.17.4",
     "astro": "^7.0.7",
     "gray-matter": "^4.0.3",
     "ogl": "^1.0.11",

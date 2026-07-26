@@ -1,5 +1,10 @@
 import { parseCookies, verifyPayload } from '../../lib/auth.js';
-import { REPO_USER, ensureFork, getFileInfo, upsertFileContent, createPullRequest, createBranch } from '../../lib/github.js';
+import { createClient } from "@libsql/client";
+
+const client = createClient({
+  url: import.meta.env.TURSO_DATABASE_URL || process.env.TURSO_DATABASE_URL,
+  authToken: import.meta.env.TURSO_AUTH_TOKEN || process.env.TURSO_AUTH_TOKEN,
+});
 
 export const POST = async ({ request }) => {
   const cookies = parseCookies(request.headers.get('cookie'));
@@ -15,69 +20,75 @@ export const POST = async ({ request }) => {
 
   const payload = await request.json();
   const researchItem = payload.research;
+  const contributor = payload.contributor || 'anonymous';
 
   if (!researchItem || !researchItem.url) {
     return new Response(JSON.stringify({ error: 'Missing research item or URL' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
   }
 
   try {
-    const contributor = payload.contributor || 'unknown';
-    const forkOwner = contributor === 'AnnacKK' ? 'AnnacKK' : contributor;
-    const branchName = `add-research-${Date.now()}`;
-    const filePath = 'Useful_Researches.json';
+     const category = researchItem.category || 'uncategorized';
+     const insertRes = await client.execute({
+        sql: "INSERT INTO researches (url, title, description, image, category, author) VALUES (?, ?, ?, ?, ?, ?)",
+        args: [researchItem.url, researchItem.title || '', researchItem.description || '', researchItem.image || '', category, contributor]
+     });
+     const researchId = Number(insertRes.lastInsertRowid);
+     
+     const tagsToInsert = new Set();
+     if (category) {
+        tagsToInsert.add(category.toLowerCase().trim());
+     }
+     
+     let tagsArray = [];
+     if (Array.isArray(researchItem.tags)) {
+        tagsArray = researchItem.tags;
+     } else if (typeof researchItem.tags === 'string') {
+        tagsArray = researchItem.tags.split(',').map(t => t.trim()).filter(Boolean);
+     }
+     
+     tagsArray.forEach(t => tagsToInsert.add(t.toLowerCase().trim().replace(/\s+/g, '-')));
 
-    // 1. Ensure fork & branch
-    await ensureFork(session.access_token, forkOwner);
-    await createBranch(session.access_token, forkOwner, branchName);
+     // Default smart tags
+     if (category.toLowerCase().includes('leetcode')) {
+        tagsToInsert.add('leetcode-style');
+        tagsToInsert.add('programming');
+     } else if (category.toLowerCase().includes('roadmap')) {
+        tagsToInsert.add('roadmaps');
+        tagsToInsert.add('planning');
+     } else if (category.toLowerCase().includes('blog')) {
+        tagsToInsert.add('best-blog-selections');
+        tagsToInsert.add('articles');
+     }
 
-    // 2. Fetch existing Useful_Researches.json from upstream (AnnacKK/GAIA_BASIN_NOTES)
-    let currentResearches = [];
-    let sha = null;
-    try {
-       const info = await getFileInfo(session.access_token, REPO_USER, filePath);
-       if (info && info.content) {
-          const decoded = Buffer.from(info.content, 'base64').toString('utf8');
-          currentResearches = JSON.parse(decoded);
-       }
-    } catch (e) {
-       // File might not exist yet, which is fine
-       console.log('Useful_Researches.json not found, will create a new one.');
-    }
+     for (const tagName of tagsToInsert) {
+        if (!tagName) continue;
+        await client.execute({
+           sql: "INSERT OR IGNORE INTO tags (name) VALUES (?)",
+           args: [tagName]
+        });
+        const tagRes = await client.execute({
+           sql: "SELECT id FROM tags WHERE name = ?",
+           args: [tagName]
+        });
+        if (tagRes.rows.length > 0) {
+           const tagId = tagRes.rows[0].id;
+           await client.execute({
+              sql: "INSERT OR IGNORE INTO research_tags (research_id, tag_id) VALUES (?, ?)",
+              args: [researchId, tagId]
+           });
+        }
+     }
 
-    // 3. Append new research
-    currentResearches.push(researchItem);
-    const newContent = JSON.stringify(currentResearches, null, 2);
-
-    // 4. Upsert file content to the new branch on the fork
-    await upsertFileContent({
-      token: session.access_token,
-      owner: forkOwner,
-      path: filePath,
-      branch: branchName,
-      content: newContent,
-      message: `Add useful research: ${researchItem.title || researchItem.url}`
-    });
-
-    // 5. Create Pull Request against AnnacKK/GAIA_BASIN_NOTES
-    const pr = await createPullRequest({
-      token: session.access_token,
-      head: `${forkOwner}:${branchName}`,
-      base: 'main',
-      title: `Add useful research: ${researchItem.title || researchItem.url}`,
-      body: `This PR adds a new useful research link:\n\n**${researchItem.title || 'Link'}**\n${researchItem.url}`
-    });
-    const prUrl = pr.html_url;
-
-    return new Response(JSON.stringify({ success: true, url: prUrl }), { 
-       status: 200, 
-       headers: { 'Content-Type': 'application/json' } 
-    });
+     return new Response(JSON.stringify({ success: true }), { 
+        status: 200, 
+        headers: { 'Content-Type': 'application/json' } 
+     });
 
   } catch (error) {
-    console.error('Error submitting research:', error);
-    return new Response(JSON.stringify({ error: error.message }), { 
-       status: 500, 
-       headers: { 'Content-Type': 'application/json' } 
-    });
+     console.error('Error submitting research:', error);
+     return new Response(JSON.stringify({ error: error.message }), { 
+        status: 500, 
+        headers: { 'Content-Type': 'application/json' } 
+     });
   }
 };

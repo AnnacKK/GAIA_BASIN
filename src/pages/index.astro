@@ -364,6 +364,12 @@ try {
             <svg class="w-4 h-4 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
             <span>Useful Researches</span>
           </button>
+          
+          <!-- Books Library Button -->
+          <button onclick="window.openLibrary()" class="flex items-center gap-3 text-sm text-[#8ecae6] hover:text-white transition-colors group px-0.5">
+            <svg class="w-4 h-4 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            <span>Books Library</span>
+          </button>
 
           <button onclick="document.getElementById('contribution-modal').classList.remove('hidden')" class="text-left text-[13px] font-medium text-slate-400 hover:text-[#8ecae6] transition-colors flex items-center gap-3">
              <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -687,8 +693,46 @@ try {
           </button>
         </div>
       </div>
+      <!-- Navigation Tabs -->
+      <div class="flex items-center gap-2 px-10 py-4 border-b border-[#0f1f42] bg-[#04112b] overflow-x-auto shrink-0">
+        <button onclick="window.switchResearchTab('all')" id="tab-all" class="px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 bg-[#1a4f7f] text-white">All</button>
+        <button onclick="window.switchResearchTab('roadmaps')" id="tab-roadmaps" class="px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 text-slate-400 hover:text-slate-200 hover:bg-[#0a1e3f]">Roadmaps</button>
+        <button onclick="window.switchResearchTab('leetcode')" id="tab-leetcode" class="px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 text-slate-400 hover:text-slate-200 hover:bg-[#0a1e3f]">LeetCode Style</button>
+        <button onclick="window.switchResearchTab('blogs')" id="tab-blogs" class="px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 text-slate-400 hover:text-slate-200 hover:bg-[#0a1e3f]">Best Blog Selections</button>
+      </div>
+
       <div class="flex-1 overflow-y-auto p-10 custom-scrollbar">
-        <div id="researches-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        <div id="researches-container" class="max-w-7xl mx-auto space-y-12">
+          <!-- Roadmaps Section -->
+          <div id="section-roadmaps-container">
+            <h3 id="header-roadmaps" class="text-xl font-bold text-[#8ecae6] mb-6 pb-2 border-b border-[#14325a]">Roadmaps</h3>
+            <div id="section-roadmaps" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div class="col-span-full text-slate-500 text-sm py-4 italic">No roadmaps added yet.</div>
+            </div>
+          </div>
+          
+          <!-- LeetCode Style Section -->
+          <div id="section-leetcode-container">
+            <h3 id="header-leetcode" class="text-xl font-bold text-[#8ecae6] mb-6 pb-2 border-b border-[#14325a]">LeetCode Style</h3>
+            <div id="section-leetcode" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div class="col-span-full text-slate-500 text-sm py-4 italic">No resources added yet.</div>
+            </div>
+          </div>
+
+          <!-- Best Blog Selections Section -->
+          <div id="section-blogs-container">
+            <h3 id="header-blogs" class="text-xl font-bold text-[#8ecae6] mb-6 pb-2 border-b border-[#14325a]">Best Blog Selections</h3>
+            <div id="section-blogs" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div class="col-span-full text-slate-500 text-sm py-4 italic">No blog posts added yet.</div>
+            </div>
+          </div>
+
+          <!-- Others Section -->
+          <div id="section-others-container" class="hidden">
+            <h3 id="header-others" class="text-xl font-bold text-[#8ecae6] mb-6 pb-2 border-b border-[#14325a]">Others</h3>
+            <div id="section-others" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -709,6 +753,20 @@ try {
               <input id="research-url-input" type="url" class="flex-1 rounded-2xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="https://..." />
               <button onclick="window.previewResearchLink()" id="btn-preview-research" class="bg-[#2b74b0] hover:bg-[#348bd2] text-white px-5 rounded-2xl font-semibold text-sm transition-colors">Preview</button>
             </div>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">Section / Category</label>
+            <select id="research-category-select" class="w-full rounded-2xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none appearance-none cursor-pointer">
+              <option value="roadmaps">Roadmaps</option>
+              <option value="leetcode style">LeetCode Style</option>
+              <option value="best blog selections">Best Blog Selections</option>
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">Tags (comma-separated)</label>
+            <input id="research-tags-input" type="text" class="w-full rounded-2xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="programming, leetcode, tutorial" />
           </div>
           
           <div id="research-preview-card" class="hidden border border-[#14325a] bg-[#05111d] rounded-2xl overflow-hidden relative">
@@ -779,6 +837,8 @@ try {
           <button onclick="window.setAccountTab('note')" id="acc-tab-note" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Added Notes</button>
           <button onclick="window.setAccountTab('edited_note')" id="acc-tab-edited_note" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Edited Notes</button>
           <button onclick="window.setAccountTab('branch')" id="acc-tab-branch" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Added Branches</button>
+          <button onclick="window.setAccountTab('research')" id="acc-tab-research" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200 transition-colors">Added Researches</button>
+          <button onclick="window.setAccountTab('moderate')" id="acc-tab-moderate" class="hidden text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200 transition-colors">Moderate Books</button>
           <div class="flex-1 hidden md:block"></div>
           <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-2 md:mt-0">Account</p>
           <button onclick="window.setAccountTab('statistics')" id="acc-tab-statistics" class="text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-[#0a2336] hover:text-slate-200">Statistics</button>
@@ -791,6 +851,154 @@ try {
           <div id="account-statistics" class="hidden max-w-4xl mx-auto"></div>
           <div id="account-settings" class="hidden max-w-4xl mx-auto"></div>
         </div>
+      </div>
+    </div>
+
+        <div id="library-window" class="hidden fixed inset-0 z-50 bg-[#071621] overflow-auto flex flex-col">
+      <!-- LIBRARY LIST VIEW -->
+      <div id="library-list-view" class="flex-1 flex flex-col p-6 md:p-12">
+         <!-- Header -->
+         <div class="flex items-center justify-between mb-8 max-w-7xl mx-auto w-full">
+            <div class="flex items-center gap-4">
+               <button onclick="window.closeLibrary()" class="text-slate-400 hover:text-white transition-colors">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+               </button>
+               <h2 class="text-2xl font-bold text-white tracking-widest uppercase">Books Library</h2>
+            </div>
+            <!-- Search & Tags -->
+            <div class="flex items-center gap-4 w-full max-w-md">
+               <div class="relative flex-1">
+                  <input type="text" id="library-search-input" oninput="window.filterBooks()" class="w-full bg-[#05111d] border border-[#14325a] rounded-full px-5 py-2.5 text-slate-200 text-sm focus:border-[#2b74b0] outline-none" placeholder="SEARCH BOOKS..." />
+               </div>
+               <button id="btn-toggle-library-tags" onclick="window.toggleLibraryTags()" class="bg-[#0a2336] border border-[#1b3e63] px-5 py-2.5 rounded-full text-xs font-bold text-[#8ecae6] hover:bg-[#1a4f7f] hover:text-white transition-colors uppercase tracking-widest">Tags</button>
+               <button onclick="window.openAddBookModal()" class="bg-[#2b74b0] hover:bg-[#348bd2] px-6 py-2.5 rounded-full text-xs font-bold text-white transition-colors uppercase tracking-widest shrink-0">+ Add Book</button>
+            </div>
+         </div>
+
+         <!-- Tags Panel -->
+         <div id="library-tags-panel" class="hidden mb-6 max-w-7xl mx-auto w-full bg-[#05111d] border border-[#14325a] rounded-2xl p-5">
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Filter by tag:</p>
+            <div id="library-tags-container" class="flex flex-wrap gap-2">
+               <!-- Tags loaded dynamically -->
+            </div>
+         </div>
+
+         <!-- Grid of Books -->
+         <div class="flex-1 max-w-7xl mx-auto w-full">
+            <div id="library-books-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8">
+               <!-- Book cards rendered dynamically -->
+            </div>
+         </div>
+      </div>
+
+      <!-- BOOK DETAIL VIEW -->
+      <div id="library-detail-view" class="hidden flex-1 flex flex-col md:flex-row overflow-hidden">
+         <!-- Left Sidebar -->
+         <div class="md:w-72 border-r border-[#1e314e] bg-[#061525] p-6 flex flex-col gap-6 shrink-0 overflow-y-auto custom-scrollbar">
+            <button onclick="window.showLibraryListView()" class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-semibold mb-4">
+               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+               <span>Library</span>
+            </button>
+            
+            <div>
+               <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3" id="book-theme-header">Books &lt;THEME&gt;</p>
+               <div id="book-playlist-list" class="flex flex-col gap-1">
+                  <!-- Playlist of books in same theme -->
+               </div>
+            </div>
+
+            <div>
+               <div id="book-similar-list" class="space-y-3 mt-3">
+                  <!-- Similar books links -->
+               </div>
+            </div>
+
+            <div class="mt-auto pt-6 border-t border-[#1e314e]">
+               <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Credits</p>
+               <p id="book-detail-credits" class="text-xs text-slate-400 leading-relaxed"></p>
+            </div>
+         </div>
+
+         <!-- Main Reader view -->
+         <div class="flex-1 bg-[#071621] p-6 md:p-12 overflow-y-auto flex flex-col items-center justify-center">
+            <div class="max-w-xl w-full flex flex-col items-center text-center">
+               <!-- Title & Difficulty Level -->
+               <h3 id="book-detail-title" class="text-3xl font-black text-white leading-tight"></h3>
+               <div class="mt-3 flex flex-col items-center gap-3">
+                  <div class="flex flex-wrap items-center justify-center gap-2">
+                     <span id="book-detail-level" class="text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full border"></span>
+                     <span id="book-detail-theme" class="text-[10px] font-extrabold uppercase tracking-widest text-[#8ecae6] bg-[#0c2a53] border border-[#1b3e63] px-3 py-1 rounded-full"></span>
+                     <span id="book-detail-author" class="text-[10px] font-extrabold uppercase tracking-widest text-slate-300 bg-[#0d2a53]/40 border border-[#1e314e] px-3 py-1 rounded-full"></span>
+                  </div>
+                  <div id="book-detail-tags" class="flex flex-wrap items-center justify-center gap-1.5 mt-1">
+                     <!-- Tags list badges -->
+                  </div>
+               </div>
+               
+               <!-- Large Cover Image -->
+               <div class="my-8 relative group max-w-[280px] w-full aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border border-[#14325a] hover:border-[#2b74b0] hover:shadow-cyan-500/10 transition-all duration-500">
+                  <img id="book-detail-cover" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="" alt="Book Cover" />
+               </div>
+
+               <!-- Description -->
+               <p id="book-detail-desc" class="text-sm text-slate-400 max-w-md leading-relaxed mb-8"></p>
+
+               <!-- Actions -->
+               <div class="flex items-center gap-6 justify-center w-full">
+                  <a id="btn-book-download" href="" target="_blank" class="flex-1 max-w-[160px] bg-[#0a2336] border border-[#1b3e63] hover:bg-[#1a4f7f] hover:text-white px-6 py-3 rounded-full text-xs font-bold text-[#8ecae6] transition-colors text-center uppercase tracking-widest">Download</a>
+                  <a id="btn-book-read" href="" target="_blank" class="flex-1 max-w-[160px] bg-[#1a4f7f] hover:bg-[#2b74b0] text-white px-6 py-3 rounded-full text-xs font-bold transition-colors text-center uppercase tracking-widest">Read</a>
+               </div>
+            </div>
+         </div>
+      </div>
+    </div>
+
+        <div id="add-book-modal" class="hidden fixed inset-0 z-[110] bg-black/80 p-6 overflow-auto flex items-center justify-center">
+      <div class="mx-auto w-full max-w-xl rounded-[32px] border border-[#1e314e] bg-[#061525] shadow-2xl relative">
+        <div class="flex flex-col gap-4 border-b border-[#17324b] px-6 py-5 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-2xl font-semibold text-white">Add Book to Library</p>
+            <p class="mt-1 text-sm text-slate-400">Upload a PDF book directly to the Hugging Face bucket.</p>
+          </div>
+          <button onclick="window.closeAddBookModal()" class="rounded-2xl border border-[#2b4d7b] bg-[#0d2a53] px-4 py-2 text-sm text-slate-100 hover:bg-[#1c4a82]">Cancel</button>
+        </div>
+        <form id="add-book-form" onsubmit="window.submitBookForm(event)" class="space-y-5 px-6 py-5">
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">Book File (PDF)</label>
+            <input type="file" id="book-file-input" accept="application/pdf" required class="w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#0d2a53] file:text-sky-200 hover:file:bg-[#1c4a82] file:cursor-pointer" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">Book Title</label>
+            <input id="book-title-input" type="text" required class="w-full rounded-2xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="A More Just Future" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">Description</label>
+            <textarea id="book-desc-input" rows="2" class="w-full rounded-2xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="Enter book summary..."></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+             <div>
+               <label class="block text-sm font-medium text-slate-300 mb-1.5">Theme / Category</label>
+               <input id="book-theme-input" type="text" required class="w-full rounded-2xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="Programming" />
+             </div>
+             <div>
+               <label class="block text-sm font-medium text-slate-300 mb-1.5">Difficulty Level</label>
+               <select id="book-level-select" class="w-full rounded-2xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none appearance-none cursor-pointer">
+                 <option value="Easy">Easy</option>
+                 <option value="Medium" selected>Medium</option>
+                 <option value="Hard">Hard</option>
+               </select>
+             </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">Tags (comma-separated)</label>
+            <input id="book-tags-input" type="text" class="w-full rounded-2xl border border-[#1f2f4f] bg-[#071625] px-4 py-3 text-slate-100 focus:border-[#5c7aff] outline-none" placeholder="statistics, tutorial, oop" />
+          </div>
+          
+          <div class="pt-2 border-t border-[#17324b] flex items-center justify-between">
+            <p id="book-submit-status" class="text-sm text-slate-400"></p>
+            <button type="submit" id="btn-submit-book" class="bg-[#1a4f7f] px-6 py-2.5 rounded-full font-semibold text-[#d5e9ff] hover:bg-[#2b74b0] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Add Book</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -1992,7 +2200,7 @@ try {
 
       window.setAccountTab = (tab) => {
          window.currentAccountTab = tab;
-         const tabs = ['all', 'book', 'article', 'course', 'note', 'edited_note', 'branch', 'statistics', 'settings'];
+         const tabs = ['all', 'book', 'article', 'course', 'note', 'edited_note', 'branch', 'research', 'statistics', 'settings', 'moderate'];
          tabs.forEach(t => {
             const el = document.getElementById('acc-tab-' + t);
             if (!el) return;
@@ -2156,6 +2364,120 @@ try {
       };
 
       window.renderAccountResources = (tab) => {
+         if (tab === 'moderate') {
+            const list = document.getElementById('account-resources-list');
+            list.innerHTML = `<div class="text-center p-12 text-slate-500">Loading pending books...</div>`;
+            fetch('/api/pendingBooks')
+              .then(res => res.json())
+              .then(data => {
+                 if (data.length === 0) {
+                    list.innerHTML = `<div class="text-center p-12 border-2 border-dashed border-[#1e314e] rounded-2xl">
+                      <p class="text-slate-400 text-lg">No books pending moderation.</p>
+                    </div>`;
+                    return;
+                 }
+                 
+                 list.innerHTML = data.map(b => `
+                   <li class="p-5 bg-[#0a2336] rounded-2xl border border-[#1b3e63] flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-lg hover:border-[#2b4d7b] transition-colors">
+                     <div class="flex-1 min-w-0">
+                       <span class="text-xs font-bold uppercase tracking-[0.2em] text-[#7c98d9]">Pending Book Entry</span>
+                       <p class="text-lg font-bold text-white mt-2 truncate">${b.title}</p>
+                       <p class="text-xs text-slate-400 mt-1">Theme: ${b.theme} | Level: ${b.level} | Author: ${b.author} | Uploaded by: ${b.contributor}</p>
+                       <a href="${b.download_url}" target="_blank" class="text-sm text-[#8ecae6] hover:text-white underline truncate block mt-1">${b.download_url}</a>
+                       ${b.tags && b.tags.length > 0 ? `
+                         <div class="flex flex-wrap gap-1.5 mt-3">
+                           ${b.tags.map(tag => `<span class="bg-[#122c4d] text-sky-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-sky-900/30 capitalize">${tag}</span>`).join('')}
+                         </div>
+                       ` : ''}
+                     </div>
+                     <div class="flex items-center gap-3 shrink-0">
+                        <button onclick="window.approveBookEntry(${b.id}, '${b.title.replace(/'/g, "\\'")}', this)" class="rounded-full bg-emerald-900/40 border border-emerald-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-emerald-200 hover:bg-emerald-800 transition-colors focus:ring-2 focus:ring-emerald-500 focus:outline-none">Approve</button>
+                        <button onclick="window.deleteBookEntry(${b.id}, '${b.title.replace(/'/g, "\\'")}', this)" class="rounded-full bg-rose-900/40 border border-rose-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-rose-200 hover:bg-rose-800 transition-colors focus:ring-2 focus:ring-rose-500 focus:outline-none">Reject</button>
+                     </div>
+                   </li>
+                 `).join('');
+              })
+              .catch(err => {
+                 list.innerHTML = `<div class="text-center p-12 text-rose-500">Error loading pending books.</div>`;
+              });
+            return;
+         }
+
+         if (tab === 'book') {
+            const list = document.getElementById('account-resources-list');
+            list.innerHTML = `<div class="text-center p-12 text-slate-500">Loading books...</div>`;
+            fetch('/api/books')
+              .then(res => res.json())
+              .then(data => {
+                 const myBooks = data.filter(b => b.contributor === window.auth.user.login);
+                 
+                 if (myBooks.length === 0) {
+                    list.innerHTML = `<div class="text-center p-12 border-2 border-dashed border-[#1e314e] rounded-2xl">
+                      <p class="text-slate-400 text-lg">No books added yet.</p>
+                    </div>`;
+                    return;
+                 }
+                 
+                 list.innerHTML = myBooks.map(b => `
+                   <li class="p-5 bg-[#0a2336] rounded-2xl border border-[#1b3e63] flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-lg hover:border-[#2b4d7b] transition-colors">
+                     <div class="flex-1 min-w-0">
+                       <span class="text-xs font-bold uppercase tracking-[0.2em] text-[#7c98d9]">Book Entry</span>
+                       <p class="text-lg font-bold text-white mt-2 truncate">${b.title}</p>
+                       <p class="text-xs text-slate-400 mt-1">Theme: ${b.theme} | Level: ${b.level} | Author: ${b.author}</p>
+                       <a href="${b.download_url}" target="_blank" class="text-sm text-[#8ecae6] hover:text-white underline truncate block mt-1">${b.download_url}</a>
+                       ${b.tags && b.tags.length > 0 ? `
+                         <div class="flex flex-wrap gap-1.5 mt-3">
+                           ${b.tags.map(tag => `<span class="bg-[#122c4d] text-sky-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-sky-900/30 capitalize">${tag}</span>`).join('')}
+                         </div>
+                       ` : ''}
+                     </div>
+                     <button onclick="window.deleteBookEntry(${b.id}, '${b.title.replace(/'/g, "\\'")}', this)" class="shrink-0 rounded-full bg-rose-900/40 border border-rose-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-rose-200 hover:bg-rose-800 transition-colors focus:ring-2 focus:ring-rose-500 focus:outline-none">Delete</button>
+                   </li>
+                 `).join('');
+              })
+              .catch(err => {
+                 list.innerHTML = `<div class="text-center p-12 text-rose-500">Error loading books.</div>`;
+              });
+            return;
+         }
+
+        if (tab === 'research') {
+           const list = document.getElementById('account-resources-list');
+           list.innerHTML = `<div class="text-center p-12 text-slate-500">Loading researches...</div>`;
+           fetch('/api/researches')
+             .then(res => res.json())
+             .then(data => {
+                const myResearches = data.filter(r => r.author === window.auth.user.login);
+                
+                if (myResearches.length === 0) {
+                   list.innerHTML = `<div class="text-center p-12 border-2 border-dashed border-[#1e314e] rounded-2xl">
+                     <p class="text-slate-400 text-lg">No researches added yet.</p>
+                   </div>`;
+                   return;
+                }
+                
+                list.innerHTML = myResearches.map(r => `
+                  <li class="p-5 bg-[#0a2336] rounded-2xl border border-[#1b3e63] flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-lg hover:border-[#2b4d7b] transition-colors">
+                    <div class="flex-1 min-w-0">
+                      <span class="text-xs font-bold uppercase tracking-[0.2em] text-[#7c98d9]">Research Link</span>
+                      <p class="text-lg font-bold text-white mt-2 truncate">${r.title || r.url}</p>
+                      <a href="${r.url}" target="_blank" class="text-sm text-[#8ecae6] hover:text-white underline truncate block mt-1">${r.url}</a>
+                      ${r.tags && r.tags.length > 0 ? `
+                        <div class="flex flex-wrap gap-1.5 mt-3">
+                          ${r.tags.map(tag => `<span class="bg-[#122c4d] text-sky-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-sky-900/30 capitalize">${tag}</span>`).join('')}
+                        </div>
+                      ` : ''}
+                    </div>
+                    <button onclick="window.deleteResearchLink(${r.id}, this)" class="shrink-0 rounded-full bg-rose-900/40 border border-rose-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-rose-200 hover:bg-rose-800 transition-colors focus:ring-2 focus:ring-rose-500 focus:outline-none">Delete</button>
+                  </li>
+                `).join('');
+             })
+             .catch(err => {
+                list.innerHTML = `<div class="text-center p-12 text-rose-500">Error loading researches.</div>`;
+             });
+           return;
+        }
+
         let combined = window.getCombinedResources();
         
         // Sort newest first (PRs first, then reverse myResources)
@@ -2214,8 +2536,105 @@ try {
         }
       };
 
+      window.deleteResearchLink = async (id, btn) => {
+         if (!confirm('Are you sure you want to delete this research link?')) return;
+         
+         btn.disabled = true;
+         btn.innerText = 'Deleting...';
+         
+         try {
+            const res = await fetch('/api/deleteResearch', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ id })
+            });
+            
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Delete failed');
+            
+            window.showToast('Research link deleted successfully.', 'success');
+            window.renderAccountResources('research');
+            if (!document.getElementById('researches-window').classList.contains('hidden')) {
+               window.fetchResearches();
+            }
+         } catch (e) {
+            alert('Error deleting research: ' + e.message);
+            btn.disabled = false;
+            btn.innerText = 'Delete';
+         }
+      };
+
+      window.deleteBookEntry = async (id, title, btn) => {
+         const modal = document.getElementById('delete-modal');
+         document.getElementById('delete-modal-title').innerText = title;
+         modal.classList.remove('hidden');
+         
+         const confirmBtn = document.getElementById('confirm-delete-btn');
+         const newBtn = confirmBtn.cloneNode(true);
+         confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+         
+         newBtn.addEventListener('click', async () => {
+            window.closeDeleteModal();
+            btn.disabled = true;
+            btn.innerText = 'Deleting...';
+            
+            try {
+               const res = await fetch('/api/deleteBook', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ id })
+               });
+               
+               const data = await res.json();
+               if (!res.ok) throw new Error(data.error || 'Delete failed');
+               
+               window.showToast('Book entry deleted successfully.', 'success');
+               window.renderAccountResources(window.currentAccountTab);
+               if (!document.getElementById('library-window').classList.contains('hidden')) {
+                  window.openLibrary();
+               }
+            } catch (e) {
+               alert('Error deleting book entry: ' + e.message);
+               btn.disabled = false;
+               btn.innerText = 'Delete';
+            }
+         });
+      };
+
+      window.approveBookEntry = async (id, title, btn) => {
+         btn.disabled = true;
+         btn.innerText = 'Approving...';
+         
+         try {
+            const res = await fetch('/api/approveBook', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ id })
+            });
+            
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Approval failed');
+            
+            window.showToast('Book approved and published successfully.', 'success');
+            window.renderAccountResources('moderate');
+            if (!document.getElementById('library-window').classList.contains('hidden')) {
+               window.openLibrary();
+            }
+         } catch (e) {
+            alert('Error approving book: ' + e.message);
+            btn.disabled = false;
+            btn.innerText = 'Approve';
+         }
+      };
+
       window.openAccountModal = async () => {
         if (!window.auth.user) return;
+        
+        if (window.auth.user.login === 'AnnacKK') {
+            document.getElementById('acc-tab-moderate').classList.remove('hidden');
+        } else {
+            document.getElementById('acc-tab-moderate').classList.add('hidden');
+        }
         
         document.getElementById('account-header-info').innerHTML = `
           <img src="${window.auth.user.avatar_url}" class="w-12 h-12 rounded-full border border-slate-500 shadow-md" />
@@ -3487,61 +3906,237 @@ try {
         // Researches Window & Modal Handlers
         window.openResearchesWindow = () => {
            document.getElementById('researches-window').classList.remove('hidden');
+           window.switchResearchTab('all');
            window.fetchResearches();
         };
+
+        window.switchResearchTab = (tab) => {
+           const tabs = ['all', 'roadmaps', 'leetcode', 'blogs'];
+           tabs.forEach(t => {
+              const btn = document.getElementById('tab-' + t);
+              if (btn) {
+                 if (t === tab) {
+                    btn.className = 'px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 bg-[#1a4f7f] text-white';
+                 } else {
+                    btn.className = 'px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 text-slate-400 hover:text-slate-200 hover:bg-[#0a1e3f]';
+                 }
+              }
+           });
+
+           const containers = {
+              roadmaps: document.getElementById('section-roadmaps-container'),
+              leetcode: document.getElementById('section-leetcode-container'),
+              blogs: document.getElementById('section-blogs-container'),
+              others: document.getElementById('section-others-container')
+           };
+
+           const headers = {
+              roadmaps: document.getElementById('header-roadmaps'),
+              leetcode: document.getElementById('header-leetcode'),
+              blogs: document.getElementById('header-blogs'),
+              others: document.getElementById('header-others')
+           };
+
+           // Hide headers if user is in a specific tab
+           Object.keys(headers).forEach(key => {
+              if (headers[key]) {
+                 if (tab === 'all') {
+                    headers[key].classList.remove('hidden');
+                 } else {
+                    headers[key].classList.add('hidden');
+                 }
+              }
+           });
+
+           if (tab === 'all') {
+              if (containers.roadmaps) containers.roadmaps.classList.remove('hidden');
+              if (containers.leetcode) containers.leetcode.classList.remove('hidden');
+              if (containers.blogs) containers.blogs.classList.remove('hidden');
+              if (window.hasOthersContent && containers.others) {
+                 containers.others.classList.remove('hidden');
+              }
+           } else {
+              Object.keys(containers).forEach(key => {
+                 if (containers[key]) {
+                    if (key === tab) {
+                       containers[key].classList.remove('hidden');
+                    } else {
+                       containers[key].classList.add('hidden');
+                    }
+                 }
+              });
+           }
+        };;
 
         window.closeResearchesWindow = () => {
            document.getElementById('researches-window').classList.add('hidden');
         };
 
         window.fetchResearches = async () => {
-           const grid = document.getElementById('researches-grid');
-           grid.innerHTML = '<div class="col-span-full flex justify-center items-center py-20 text-slate-500 text-lg">Loading researches...</div>';
+           const roadmapsGrid = document.getElementById('section-roadmaps');
+           const leetcodeGrid = document.getElementById('section-leetcode');
+           const blogsGrid = document.getElementById('section-blogs');
+           const othersGrid = document.getElementById('section-others');
+           const othersContainer = document.getElementById('section-others-container');
+
+           const loadingHTML = '<div class="col-span-full flex justify-center items-center py-10 text-slate-500 text-base">Loading...</div>';
+           roadmapsGrid.innerHTML = loadingHTML;
+           leetcodeGrid.innerHTML = loadingHTML;
+           blogsGrid.innerHTML = loadingHTML;
+           if (othersGrid) othersGrid.innerHTML = '';
+           if (othersContainer) othersContainer.classList.add('hidden');
+
            try {
-             const res = await fetch('https://raw.githubusercontent.com/AnnacKK/GAIA_BASIN_NOTES/main/Useful_Researches.json?t=' + Date.now());
+             const res = await fetch('/api/researches');
              if (!res.ok) {
                  if (res.status === 404) {
-                     grid.innerHTML = '<div class="col-span-full flex justify-center items-center py-20 text-slate-500">No researches added yet. Be the first!</div>';
+                     roadmapsGrid.innerHTML = '<div class="col-span-full text-slate-500 text-sm py-4 italic">No roadmaps added yet.</div>';
+                     leetcodeGrid.innerHTML = '<div class="col-span-full text-slate-500 text-sm py-4 italic">No resources added yet.</div>';
+                     blogsGrid.innerHTML = '<div class="col-span-full text-slate-500 text-sm py-4 italic">No blog posts added yet.</div>';
                      return;
                  }
                  throw new Error('Failed to fetch');
              }
              const data = await res.json();
              if (!data || data.length === 0) {
-                 grid.innerHTML = '<div class="col-span-full flex justify-center items-center py-20 text-slate-500">No researches added yet. Be the first!</div>';
+                 roadmapsGrid.innerHTML = '<div class="col-span-full text-slate-500 text-sm py-4 italic">No roadmaps added yet.</div>';
+                 leetcodeGrid.innerHTML = '<div class="col-span-full text-slate-500 text-sm py-4 italic">No resources added yet.</div>';
+                 blogsGrid.innerHTML = '<div class="col-span-full text-slate-500 text-sm py-4 italic">No blog posts added yet.</div>';
                  return;
              }
              
-             grid.innerHTML = data.reverse().map(item => `
+             const roadmaps = [];
+             const leetcode = [];
+             const blogs = [];
+             const others = [];
+
+             data.reverse().forEach(item => {
+                const cat = (item.category || '').toLowerCase().trim();
+                if (cat === 'roadmaps') {
+                   roadmaps.push(item);
+                } else if (cat === 'leetcode style') {
+                   leetcode.push(item);
+                } else if (cat === 'best blog selections') {
+                   blogs.push(item);
+                } else {
+                   others.push(item);
+                }
+             });
+
+             const renderCard = (item) => `
                <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="group flex flex-col bg-[#05162a] border border-[#14325a] rounded-2xl overflow-hidden hover:border-[#2b74b0] hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-2xl">
                  ${item.image ? `<div class="h-44 w-full bg-cover bg-center border-b border-[#14325a] group-hover:scale-105 transition-transform duration-500" style="background-image: url('${item.image}')"></div>` : `<div class="h-44 w-full bg-[#0a1e3f] border-b border-[#14325a] flex items-center justify-center text-[#2b74b0]"><svg class="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg></div>`}
                  <div class="p-5 flex-1 flex flex-col">
                    <h3 class="font-bold text-[#d5e9ff] line-clamp-2 leading-tight group-hover:text-white transition-colors">${item.title || item.url}</h3>
+                   <p class="text-[11px] text-[#8ecae6] opacity-70 mt-1 uppercase tracking-widest font-bold">By ${item.author || 'Anonymous Contributor'}</p>
                    ${item.description ? `<p class="text-[13px] text-slate-400 mt-2 line-clamp-3 leading-relaxed">${item.description}</p>` : ''}
+                   
+                   ${item.tags && item.tags.length > 0 ? `
+                     <div class="flex flex-wrap gap-1.5 mt-3">
+                       ${item.tags.map(tag => `<span class="bg-[#122c4d] text-sky-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-sky-900/30 capitalize">${tag}</span>`).join('')}
+                     </div>
+                   ` : ''}
+
                    <div class="mt-auto pt-5 flex items-center gap-2 text-xs text-[#348bd2] group-hover:text-[#5c7aff] font-semibold uppercase tracking-wider">
                      <span>Visit Link</span>
                      <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                    </div>
                  </div>
                </a>
-             `).join('');
+             `;
+
+             if (roadmaps.length > 0) {
+                roadmapsGrid.innerHTML = roadmaps.map(renderCard).join('');
+             } else {
+                roadmapsGrid.innerHTML = '<div class="col-span-full text-slate-500 text-sm py-4 italic">No roadmaps added yet.</div>';
+             }
+
+             if (leetcode.length > 0) {
+                leetcodeGrid.innerHTML = leetcode.map(renderCard).join('');
+             } else {
+                leetcodeGrid.innerHTML = '<div class="col-span-full text-slate-500 text-sm py-4 italic">No resources added yet.</div>';
+             }
+
+             if (blogs.length > 0) {
+                blogsGrid.innerHTML = blogs.map(renderCard).join('');
+             } else {
+                blogsGrid.innerHTML = '<div class="col-span-full text-slate-500 text-sm py-4 italic">No blog posts added yet.</div>';
+             }
+
+             window.hasOthersContent = others.length > 0;
+             if (others.length > 0 && othersContainer && othersGrid) {
+                othersContainer.classList.remove('hidden');
+                othersGrid.innerHTML = others.map(renderCard).join('');
+             }
            } catch (e) {
-             grid.innerHTML = '<div class="col-span-full flex justify-center items-center py-20 text-rose-500">Error loading researches. Try again later.</div>';
+             const errorHTML = '<div class="col-span-full text-rose-500 text-sm py-4">Error loading researches. Try again later.</div>';
+             roadmapsGrid.innerHTML = errorHTML;
+             leetcodeGrid.innerHTML = errorHTML;
+             blogsGrid.innerHTML = errorHTML;
            }
         };
 
-        window.openAddResearchModal = () => {
-           if (!window.auth?.user) {
-              alert('You must be logged in to add a research link.');
-              return;
+         window.showToast = (message, type = 'error') => {
+           let container = document.getElementById('toast-container');
+           if (!container) {
+              container = document.createElement('div');
+              container.id = 'toast-container';
+              container.className = 'fixed bottom-5 right-5 z-[9999] flex flex-col gap-3 max-w-sm w-full';
+              document.body.appendChild(container);
            }
-           document.getElementById('add-research-modal').classList.remove('hidden');
-           document.getElementById('research-url-input').value = '';
-           document.getElementById('research-preview-card').classList.add('hidden');
-           document.getElementById('research-submit-status').innerText = '';
-           document.getElementById('btn-submit-research').disabled = true;
-           window.currentResearchPreview = null;
+
+           const toast = document.createElement('div');
+           const bgClass = type === 'error' ? 'bg-[#2a0810] border-rose-500/30 text-rose-200' : 'bg-[#081f2a] border-[#1a4f7f]/30 text-sky-200';
+           const iconColor = type === 'error' ? 'text-rose-400' : 'text-sky-400';
+           
+           toast.className = `${bgClass} border p-4 rounded-2xl shadow-2xl flex items-start gap-3 transition-all duration-500 translate-y-5 opacity-0 border-l-4`;
+           if (type === 'error') {
+              toast.style.borderLeftColor = '#f43f5e';
+           } else {
+              toast.style.borderLeftColor = '#38bdf8';
+           }
+
+           toast.innerHTML = `
+             <div class="${iconColor} shrink-0 mt-0.5">
+               ${type === 'error' ? `
+                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+               ` : `
+                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+               `}
+             </div>
+             <div class="flex-1 text-sm font-semibold leading-relaxed">${message}</div>
+             <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white transition-colors shrink-0">
+               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+             </button>
+           `;
+
+           container.appendChild(toast);
+
+           setTimeout(() => {
+              toast.classList.remove('translate-y-5', 'opacity-0');
+           }, 10);
+
+           setTimeout(() => {
+              toast.classList.add('opacity-0', '-translate-y-2');
+              setTimeout(() => {
+                 toast.remove();
+              }, 500);
+           }, 4500);
         };
+
+         window.openAddResearchModal = () => {
+            if (!window.auth?.user) {
+               document.getElementById('auth-warning-modal').classList.remove('hidden');
+               return;
+            }
+            document.getElementById('add-research-modal').classList.remove('hidden');
+            document.getElementById('research-url-input').value = '';
+            document.getElementById('research-tags-input').value = '';
+            document.getElementById('research-preview-card').classList.add('hidden');
+            document.getElementById('research-submit-status').innerText = '';
+            document.getElementById('btn-submit-research').disabled = true;
+            window.currentResearchPreview = null;
+         };
 
         window.closeAddResearchModal = () => {
            document.getElementById('add-research-modal').classList.add('hidden');
@@ -3591,7 +4186,281 @@ try {
            }
         };
 
-        window.submitResearchLink = async () => {
+        let allBooksData = [];
+         let activeLibraryTag = null;
+
+         document.addEventListener('DOMContentLoaded', () => {
+            const fileInput = document.getElementById('book-file-input');
+            if (fileInput) {
+               fileInput.addEventListener('change', (e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                     let cleanedName = file.name
+                        .replace(/\.pdf$/i, '')
+                        .replace(/[_-]/g, ' ')
+                        .trim();
+                     document.getElementById('book-title-input').value = cleanedName;
+                  }
+               });
+            }
+         });
+
+         window.openAddBookModal = () => {
+            if (!window.auth?.user) {
+               document.getElementById('auth-warning-modal').classList.remove('hidden');
+               return;
+            }
+            document.getElementById('add-book-modal').classList.remove('hidden');
+            document.getElementById('add-book-form').reset();
+            document.getElementById('book-submit-status').innerText = '';
+            document.getElementById('book-submit-status').className = 'text-sm text-slate-400';
+            document.getElementById('btn-submit-book').disabled = false;
+            document.getElementById('btn-submit-book').innerText = 'Add Book';
+         };
+
+         window.closeAddBookModal = () => {
+            document.getElementById('add-book-modal').classList.add('hidden');
+         };
+
+         window.submitBookForm = async (event) => {
+            event.preventDefault();
+            const btn = document.getElementById('btn-submit-book');
+            const status = document.getElementById('book-submit-status');
+            
+            btn.disabled = true;
+            btn.innerText = 'Uploading...';
+            status.innerText = 'Preparing file and uploading to Hugging Face...';
+            status.className = 'text-sm text-amber-400';
+            
+            const fileInput = document.getElementById('book-file-input');
+            const titleInput = document.getElementById('book-title-input');
+            const descInput = document.getElementById('book-desc-input');
+            const themeInput = document.getElementById('book-theme-input');
+            const levelSelect = document.getElementById('book-level-select');
+            const tagsInput = document.getElementById('book-tags-input');
+            
+            const file = fileInput.files[0];
+            if (!file) {
+               status.innerText = 'Error: Please select a PDF file.';
+               status.className = 'text-sm text-rose-400';
+               btn.disabled = false;
+               btn.innerText = 'Add Book';
+               return;
+            }
+            
+            const formData = new FormData();
+            formData.append('title', titleInput.value);
+            formData.append('description', descInput.value);
+            formData.append('theme', themeInput.value);
+            formData.append('level', levelSelect.value);
+            formData.append('tags', tagsInput.value);
+            formData.append('file', file);
+            
+            try {
+               const res = await fetch('/api/addBook', {
+                  method: 'POST',
+                  body: formData
+               });
+               
+               const data = await res.json();
+               if (!res.ok) throw new Error(data.error || 'Failed to add book');
+               
+               status.innerText = 'Book successfully added to library!';
+               status.className = 'text-sm text-emerald-400';
+               btn.innerText = 'Success!';
+               
+               setTimeout(() => {
+                  window.closeAddBookModal();
+                  window.showCelebration('Book Added successfully!');
+                  window.openLibrary(); // Refresh library listing
+               }, 1500);
+            } catch (e) {
+               status.innerText = 'Error: ' + e.message;
+               status.className = 'text-sm text-rose-400';
+               btn.disabled = false;
+               btn.innerText = 'Add Book';
+            }
+         };
+
+         window.openLibrary = async () => {
+            document.getElementById('library-window').classList.remove('hidden');
+            window.showLibraryListView();
+            
+            const grid = document.getElementById('library-books-grid');
+            grid.innerHTML = '<div class="col-span-full text-center p-12 text-slate-500">Loading library...</div>';
+            
+            try {
+               const res = await fetch('/api/books');
+               if (!res.ok) throw new Error('Failed to fetch books');
+               allBooksData = await res.json();
+               
+               // Render tags panel dynamically
+               const tagsContainer = document.getElementById('library-tags-container');
+               const uniqueTags = new Set();
+               allBooksData.forEach(b => b.tags.forEach(t => uniqueTags.add(t)));
+               
+               tagsContainer.innerHTML = Array.from(uniqueTags).map(tag => `
+                  <button onclick="window.selectLibraryTag('${tag.replace(/'/g, "\\'")}', this)" class="bg-[#0a2336] border border-[#1b3e63] px-3.5 py-1.5 rounded-full text-xs text-[#8ecae6] hover:bg-[#12315e] transition-colors capitalize">${tag}</button>
+               `).join('');
+               
+               window.filterBooks();
+            } catch (err) {
+               grid.innerHTML = '<div class="col-span-full text-center p-12 text-rose-500">Failed to load library.</div>';
+            }
+         };
+
+         window.closeLibrary = () => {
+            document.getElementById('library-window').classList.add('hidden');
+         };
+
+         window.showLibraryListView = () => {
+            document.getElementById('library-list-view').classList.remove('hidden');
+            document.getElementById('library-detail-view').classList.add('hidden');
+         };
+
+         window.toggleLibraryTags = () => {
+            const panel = document.getElementById('library-tags-panel');
+            panel.classList.toggle('hidden');
+         };
+
+         window.selectLibraryTag = (tag, btn) => {
+            const container = document.getElementById('library-tags-container');
+            const buttons = container.querySelectorAll('button');
+            
+            if (activeLibraryTag === tag) {
+               activeLibraryTag = null;
+               btn.classList.replace('bg-[#1a4f7f]', 'bg-[#0a2336]');
+               btn.classList.replace('text-white', 'text-[#8ecae6]');
+            } else {
+               activeLibraryTag = tag;
+               buttons.forEach(b => {
+                  b.classList.replace('bg-[#1a4f7f]', 'bg-[#0a2336]');
+                  b.classList.replace('text-white', 'text-[#8ecae6]');
+               });
+               btn.classList.replace('bg-[#0a2336]', 'bg-[#1a4f7f]');
+               btn.classList.replace('text-[#8ecae6]', 'text-white');
+            }
+            window.filterBooks();
+         };
+
+         window.filterBooks = () => {
+            const query = document.getElementById('library-search-input').value.toLowerCase().trim();
+            const grid = document.getElementById('library-books-grid');
+            
+            const filtered = allBooksData.filter(b => {
+               const matchesSearch = b.title.toLowerCase().includes(query) || (b.description && b.description.toLowerCase().includes(query));
+               const matchesTag = !activeLibraryTag || b.tags.includes(activeLibraryTag);
+               return matchesSearch && matchesTag;
+            });
+            
+            if (filtered.length === 0) {
+               grid.innerHTML = '<div class="col-span-full text-center p-12 text-slate-500 italic">No books match your criteria.</div>';
+               return;
+            }
+            
+            grid.innerHTML = filtered.map(b => `
+               <div onclick="window.openBookDetail(${b.id})" class="group cursor-pointer flex flex-col items-center">
+                  <div class="w-full aspect-[3/4] rounded-2xl overflow-hidden shadow-lg border border-[#14325a] hover:border-[#2b74b0] transition-all duration-300 relative group-hover:-translate-y-1">
+                     <div class="absolute top-3 left-3 bg-[#061525]/90 backdrop-blur-md border border-[#1e314e] px-2.5 py-1 rounded-md text-[9px] font-extrabold text-[#8ecae6] uppercase tracking-widest z-10">${b.theme || 'General'}</div>
+                     <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="${b.cover_image || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=2787&auto=format&fit=crop'}" alt="${b.title}" />
+                  </div>
+                  <p class="mt-3 text-sm font-bold text-[#d5e9ff] text-center group-hover:text-white transition-colors leading-snug px-2">${b.title}</p>
+               </div>
+            `).join('');
+         };
+
+         window.downloadBookFile = async (url, filename) => {
+            const btn = document.getElementById('btn-book-download');
+            const originalText = btn.innerText;
+            btn.innerText = 'Downloading...';
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.7';
+            try {
+               const response = await fetch(url);
+               const blob = await response.blob();
+               const blobUrl = URL.createObjectURL(blob);
+               const link = document.createElement('a');
+               link.href = blobUrl;
+               link.download = filename;
+               document.body.appendChild(link);
+               link.click();
+               document.body.removeChild(link);
+               URL.revokeObjectURL(blobUrl);
+            } catch (e) {
+               console.error('Download failed, falling back to open in tab:', e);
+               window.open(url, '_blank');
+            } finally {
+               btn.innerText = originalText;
+               btn.style.pointerEvents = 'auto';
+               btn.style.opacity = '1';
+            }
+         };
+
+         window.openBookDetail = (id) => {
+            const book = allBooksData.find(b => b.id === id);
+            if (!book) return;
+            
+            document.getElementById('library-list-view').classList.add('hidden');
+            document.getElementById('library-detail-view').classList.remove('hidden');
+            
+            document.getElementById('book-detail-title').innerText = book.title;
+            
+            // Set colored level badge
+            const lvlBadge = document.getElementById('book-detail-level');
+            lvlBadge.innerText = `level: ${book.level || 'Medium'}`;
+            lvlBadge.className = 'text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full border';
+            const lvl = (book.level || 'Medium').toLowerCase();
+            if (lvl === 'easy') {
+               lvlBadge.classList.add('text-emerald-400', 'bg-emerald-950/40', 'border-emerald-500/30');
+            } else if (lvl === 'hard') {
+               lvlBadge.classList.add('text-rose-400', 'bg-rose-950/40', 'border-rose-500/30');
+            } else {
+               lvlBadge.classList.add('text-amber-400', 'bg-amber-950/40', 'border-amber-500/30');
+            }
+            
+            document.getElementById('book-detail-theme').innerText = `theme: ${book.theme || 'General'}`;
+            document.getElementById('book-detail-author').innerText = `author: ${book.author || 'Unknown'}`;
+            
+            // Render tags list
+            const tagsBadgeContainer = document.getElementById('book-detail-tags');
+            if (book.tags && book.tags.length > 0) {
+               tagsBadgeContainer.innerHTML = book.tags.map(t => `
+                  <span class="text-[9px] font-bold bg-[#14325a]/40 border border-[#1b3e63] px-2 py-0.5 rounded text-slate-300 capitalize">${t}</span>
+               `).join('');
+            } else {
+               tagsBadgeContainer.innerHTML = '';
+            }
+
+            document.getElementById('book-detail-cover').src = book.cover_image || '';
+            document.getElementById('book-detail-desc').innerText = book.description || 'No description available.';
+            document.getElementById('btn-book-download').onclick = (e) => {
+               e.preventDefault();
+               window.downloadBookFile(book.download_url, book.title + '.pdf');
+            };
+            document.getElementById('btn-book-read').href = book.read_url || '#';
+            document.getElementById('book-detail-credits').innerText = `Contributed by ${book.contributor || 'Anonymous'}`;
+            
+            // Render similar books by Theme
+            const similarContainer = document.getElementById('book-similar-list');
+            const similar = allBooksData.filter(b => b.id !== book.id && b.theme === book.theme);
+            if (similar.length === 0) {
+               similarContainer.innerHTML = '<p class="text-xs text-slate-500 italic">No similar books found</p>';
+            } else {
+               similarContainer.innerHTML = similar.slice(0, 3).map(s => `
+                  <a onclick="window.openBookDetail(${s.id})" class="text-xs text-[#8ecae6] hover:text-white underline cursor-pointer block truncate">${s.title}</a>
+               `).join('');
+            }
+            
+            // Render playlist
+            document.getElementById('book-theme-header').innerText = `Books <${book.theme || 'THEME'}>`;
+            const playlistContainer = document.getElementById('book-playlist-list');
+            const sameTheme = allBooksData.filter(b => b.theme === book.theme);
+            playlistContainer.innerHTML = sameTheme.map(p => `
+               <button onclick="window.openBookDetail(${p.id})" class="text-left px-3 py-2 rounded-lg text-xs font-semibold ${p.id === book.id ? 'bg-[#0d2a53] text-[#8ecae6]' : 'text-slate-400 hover:bg-[#0a2336] hover:text-slate-200'} transition-all truncate block w-full">${p.title}</button>
+            `).join('');
+         };
+         
+         window.submitResearchLink = async () => {
            const btn = document.getElementById('btn-submit-research');
            const status = document.getElementById('research-submit-status');
            
@@ -3606,21 +4475,25 @@ try {
                  method: 'POST',
                  headers: { 'Content-Type': 'application/json' },
                  body: JSON.stringify({
-                    contributor: window.auth.user.login,
-                    research: window.currentResearchPreview
-                 })
+                     contributor: window.auth.user.login,
+                     research: {
+                        ...window.currentResearchPreview,
+                        category: document.getElementById('research-category-select').value,
+                        tags: document.getElementById('research-tags-input').value
+                     }
+                  })
               });
               
               const data = await res.json();
               if (!res.ok) throw new Error(data.error || 'Submission failed');
               
-              status.innerText = 'Pull Request successfully submitted!';
+              status.innerText = 'Research successfully submitted!';
               status.classList.replace('text-amber-400', 'text-emerald-400');
               btn.innerText = 'Success!';
               
               setTimeout(() => {
                  window.closeAddResearchModal();
-                 window.showCelebration('Research Submitted! Pull Request created.');
+                 window.showCelebration('Research Submitted!');
                  window.fetchResearches(); // Optimistic refresh
               }, 1500);
               
@@ -3632,5 +4505,17 @@ try {
            }
         };
       </script>
-  </body>
+      <!-- Auth Required Warning Modal -->
+    <div id="auth-warning-modal" class="hidden fixed inset-0 z-[120] bg-black/80 flex items-center justify-center p-6">
+      <div class="mx-auto w-full max-w-sm rounded-[24px] border border-[#1e314e] bg-[#0b1d33] p-8 shadow-2xl relative text-left">
+        <h3 class="text-xl font-bold text-white mb-2">Authentication Required</h3>
+        <p class="text-slate-400 text-sm mb-6">Only logged in users can add resources.</p>
+        <div class="flex items-center justify-end gap-4">
+          <a href="/api/auth/login" class="bg-[#1a4f7f] hover:bg-[#2b74b0] text-white px-5 py-2.5 rounded-2xl text-sm font-semibold transition-colors shadow-lg">Log In</a>
+          <button onclick="document.getElementById('auth-warning-modal').classList.add('hidden')" class="px-4 py-2.5 text-sm font-semibold text-slate-300 hover:text-white transition-colors">Close</button>
+        </div>
+      </div>
+    </div>
+
+    </body>
 </html>
